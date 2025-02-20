@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-
 import { Jersey_10 } from "next/font/google";
+import "../globals.css";
+import NavBarLogin from "../components/NavBarLogin";
 
 const jersey = Jersey_10({ subsets: ["latin"], weight: "400" });
 
@@ -17,7 +16,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={jersey.className}>{children}</body>
+      <body className={`${jersey.className} overflow-x-hidden`}>
+        <NavBarLogin />
+        {children}
+      </body>
     </html>
   );
 }
