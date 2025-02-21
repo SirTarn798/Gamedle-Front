@@ -24,6 +24,7 @@ export default {
         sm: '1px 1px 2px rgba(226, 84, 255, 1)',
         md: '2px 2px 4px rgba(226, 84, 255, 1)',
         lg: '3px 3px 6px rgba(226, 84, 255, 1)',
+        nm: '2px 2px 4px rgba(41, 40, 40, 0)',
       },
     },
   },
