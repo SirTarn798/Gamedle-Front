@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${jersey.className} overflow-x-hidden bg-mainTheme`}>
-        <div className="relative flex flex-col items-center w-full h-dvh justify-between bg-[url(/ArcadeBG.jpg)] bg-cover bg-center">
+        <div className="relative flex flex-col items-center w-full h-dvh justify-between bg-[url(/ArcadeBG.png)] bg-cover bg-center">
           <div className="absolute inset-0 bg-black bg-opacity-50"></div>
           {children}
         </div>
