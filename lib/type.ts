@@ -21,3 +21,9 @@ export type LeagueClassicInput = {
     status: boolean;
   };
 };
+
+export type LeagueSearch = {
+  image:string,
+  name:string,
+  title:string,
+}
