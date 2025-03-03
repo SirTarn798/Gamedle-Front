@@ -30,7 +30,7 @@ export default function RuneterraReflexCanvas() {
   const [loading, setLoading] = useState(false);
 
   const handleQueueUp = () => {
-    socket.emit("findMatch", {username : "x"});
+    socket.emit("findMatch", { username: "x" });
     setLoading(true);
 
     socket.on("matchFound", ({ roomId }) => {
@@ -43,7 +43,7 @@ export default function RuneterraReflexCanvas() {
   const handleCancelQueue = () => {
     socket.emit("cancelQueue");
     setLoading(false);
-  }
+  };
 
   const handleCreateRoom = () => {
     socket.emit("createRoom");
@@ -73,29 +73,6 @@ export default function RuneterraReflexCanvas() {
 
   useEffect(() => {
     if (!gameStarted) return;
-
-    socket.on("updatePlayers", (updatedPlayers) => {
-      setPlayers(updatedPlayers);
-    });
-
-    socket.on("spawnArrow", (arrow) => {
-      setArrows((prev) => [...prev, arrow]);
-    });
-
-    socket.on("updateArrows", (updatedArrows) => {
-      setArrows(updatedArrows);
-    });
-
-    socket.on("playerHit", ({ playerId }) => {
-      console.log(`Player ${playerId} was hit!`);
-    });
-
-    return () => {
-      socket.off("updatePlayers");
-      socket.off("spawnArrow");
-      socket.off("updateArrows");
-      socket.off("playerHit");
-    };
   }, [gameStarted]);
 
   useEffect(() => {
@@ -124,26 +101,95 @@ export default function RuneterraReflexCanvas() {
     draw();
   }, [players, arrows, gameStarted]);
 
+  useEffect(() => {
+    if (!gameStarted) return;
+
+    const updatePlayers = (updatedPlayers: { [id: string]: Player }) => {
+      console.log(updatedPlayers);
+      setPlayers(updatedPlayers);
+    };
+
+    socket.on("updatePlayers", (updatedPlayers) => {
+      updatePlayers(updatedPlayers);
+    });
+
+    return () => socket.off("updatePlayers");
+  }, [gameStarted]);
+
+  const keys = {
+    w: {
+      pressed: false,
+    },
+    a: {
+      pressed: false,
+    },
+    s: {
+      pressed: false,
+    },
+    d: {
+      pressed: false,
+    },
+  };
+  setInterval(() => {
+    if (keys.w.pressed) socket.emit("move", { key: "w" });
+    if (keys.a.pressed) socket.emit("move", { key: "a" });
+    if (keys.s.pressed) socket.emit("move", { key: "s" });
+    if (keys.d.pressed) socket.emit("move", { key: "d" });
+  }, 15);
+
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (!gameStarted || !roomId) return;
-    let newPos = { ...players[socket.id] };
-    if (!newPos) return;
+    if (!gameStarted) return;
+    let key = e.key;
+    if (!["w", "a", "s", "d", "f"].includes(key)) return;
+    switch (key) {
+      case "w":
+        keys.w.pressed = true;
+        break;
+      case "a":
+        keys.a.pressed = true;
+        break;
+      case "s":
+        keys.s.pressed = true;
+        break;
+      case "d":
+        keys.d.pressed = true;
+        break;
+      case "f":
+        socket.emit("flash");
+    }
+  };
 
-    if (e.key === "ArrowLeft" && newPos.x > 0) newPos.x -= 10;
-    if (e.key === "ArrowRight" && newPos.x < canvasWidth - playerSize)
-      newPos.x += 10;
-    if (e.key === "ArrowUp" && newPos.y > 0) newPos.y -= 10;
-    if (e.key === "ArrowDown" && newPos.y < canvasHeight - playerSize)
-      newPos.y += 10;
-
-    socket.emit("move", { roomId, position: newPos });
+  const handleKeyUp = (e: KeyboardEvent) => {
+    if (!gameStarted) return;
+    let key = e.key;
+    if (!["w", "a", "s", "d"].includes(key)) return;
+    switch (key) {
+      case "w":
+        keys.w.pressed = false;
+        break;
+      case "a":
+        keys.a.pressed = false;
+        break;
+      case "s":
+        keys.s.pressed = false;
+        break;
+      case "d":
+        keys.d.pressed = false;
+        break;
+    }
   };
 
   useEffect(() => {
     if (!gameStarted) return;
+    
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [players, gameStarted]);
+    window.addEventListener("keyup", handleKeyUp);
+  
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [gameStarted]);
 
   return !gameStarted ? (
     !loading ? (
@@ -173,7 +219,12 @@ export default function RuneterraReflexCanvas() {
         <div className="flex flex-col items-center justify-center">
           <h1 className="text-3xl">Waiting for other players</h1>
           <div className="animate-spin h-16 w-16 border-4 border-gray-300 border-t-black rounded-full m-10"></div>
-          <button className="bg-cancelRed py-2 px-5" onClick={handleCancelQueue}>Cancel</button>
+          <button
+            className="bg-cancelRed py-2 px-5"
+            onClick={handleCancelQueue}
+          >
+            Cancel
+          </button>
         </div>
       </div>
     )
