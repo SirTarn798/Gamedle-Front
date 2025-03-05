@@ -3,6 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
+import up1 from "@/public/playerMovement/up1.png";
+import up2 from "@/public/playerMovement/up2.png";
+import down1 from "@/public/playerMovement/down1.png";
+import down2 from "@/public/playerMovement/down2.png";
+import left1 from "@/public/playerMovement/left1.png";
+import left2 from "@/public/playerMovement/left2.png";
+import right1 from "@/public/playerMovement/right1.png";
+import right2 from "@/public/playerMovement/right2.png";
 
 const socket = io("http://localhost:4000"); // Change to your server URL
 
@@ -10,10 +18,14 @@ const canvasWidth = 800;
 const canvasHeight = 600;
 const playerSize = 50;
 
-interface Player {
+type Player = {
+  username: string;
   x: number;
   y: number;
-}
+  trap: number;
+  flash: boolean;
+  direction : string;
+};
 
 interface Arrow {
   id: string;
@@ -29,7 +41,12 @@ export default function RuneterraReflexCanvas() {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [joinRoomId, setJoinRoomId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [lastDirection, setLastDirection] = useState<string | null>(null)
+  const [lastDirection, setLastDirection] = useState<string>("right")
+  const playerImages = useRef<{ [key: string]: HTMLImageElement[] }>({});
+  const [animationFrame, setAnimationFrame] = useState(0);
+  const [isMoving, setIsMoving] = useState(false);
+
+
 
   const handleQueueUp = () => {
     socket.emit("findMatch", { username: "x" });
@@ -74,6 +91,34 @@ export default function RuneterraReflexCanvas() {
   };
 
   useEffect(() => {
+    const loadImages = () => {
+      const images: { [key: string]: HTMLImageElement[] } = {
+        up: [new Image(), new Image()],
+        down: [new Image(), new Image()],
+        left: [new Image(), new Image()],
+        right: [new Image(), new Image()],
+      };
+
+      images.up[0].src = up1.src;
+      images.up[1].src = up2.src;
+      images.down[0].src = down1.src;
+      images.down[1].src = down2.src;
+      images.left[0].src = left1.src;
+      images.left[1].src = left2.src;
+      images.right[0].src = right1.src;
+      images.right[1].src = right2.src;
+
+      Object.values(images).flat().forEach((img) => {
+        img.onload = () => {
+          playerImages.current = images;
+        };
+      });
+    };
+
+    loadImages();
+  }, []);
+
+  useEffect(() => {
     if (!gameStarted) return;
   }, [gameStarted]);
 
@@ -87,17 +132,29 @@ export default function RuneterraReflexCanvas() {
 
     const draw = () => {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-      // Draw players
-      Object.entries(players).forEach(([id, player]) => {
-        ctx.fillStyle = id === socket.id ? "blue" : "red"; // Different color for self
-        ctx.fillRect(player.x, player.y, playerSize, playerSize);
+    
+      Object.entries(players).forEach(([id, player]) => {     
+        const frames = playerImages.current[player.direction]; // Get correct direction sprites
+        console.log("frames:", frames);
+    
+        if (!frames) {
+          return;
+        }
+    
+        const sprite = isMoving ? frames[animationFrame] : frames[0]; // Choose frame
+    
+        if (sprite) {
+          ctx.drawImage(sprite, player.x, player.y, playerSize, playerSize);
+        } else {
+          ctx.fillStyle = id === socket.id ? "blue" : "red";
+          ctx.fillRect(player.x, player.y, playerSize, playerSize);
+        }
       });
-
+    
       // Draw arrows
       arrows.forEach((arrow) => {
         ctx.fillStyle = "black";
-        ctx.fillRect(arrow.x, arrow.y, 10, 20); // Arrow size
+        ctx.fillRect(arrow.x, arrow.y, 10, 20);
       });
     };
     draw();
@@ -107,7 +164,6 @@ export default function RuneterraReflexCanvas() {
     if (!gameStarted) return;
 
     const updatePlayers = (updatedPlayers: { [id: string]: Player }) => {
-      console.log(updatedPlayers);
       setPlayers(updatedPlayers);
     };
 
@@ -135,24 +191,24 @@ export default function RuneterraReflexCanvas() {
 
   useEffect(() => {
     if (!gameStarted) return;
-    
+
     const movementInterval = setInterval(() => {
       let directionChanged = false;
-      
+
       if (keys.w.pressed) {
-        socket.emit("move", { key: "w", playerDirection : "up" });
+        socket.emit("move", { key: "w", playerDirection: "up" });
       }
       if (keys.a.pressed) {
-        socket.emit("move", { key: "a", playerDirection : "left" });
+        socket.emit("move", { key: "a", playerDirection: "left" });
       }
       if (keys.s.pressed) {
-        socket.emit("move", { key: "s", playerDirection : "down" });
+        socket.emit("move", { key: "s", playerDirection: "down" });
       }
       if (keys.d.pressed) {
-        socket.emit("move", { key: "d", playerDirection : "right" });
+        socket.emit("move", { key: "d", playerDirection: "right" });
       }
     }, 15);
-    
+
     return () => clearInterval(movementInterval);
   }, [gameStarted]);
 
@@ -160,28 +216,35 @@ export default function RuneterraReflexCanvas() {
     if (!gameStarted) return;
     let key = e.key;
     if (!["w", "a", "s", "d", "f"].includes(key)) return;
+  
+    setIsMoving(true); // Player is moving
+  
     switch (key) {
       case "w":
         keys.w.pressed = true;
+        setLastDirection("up");
         break;
       case "a":
         keys.a.pressed = true;
+        setLastDirection("left");
         break;
       case "s":
         keys.s.pressed = true;
+        setLastDirection("down");
         break;
       case "d":
         keys.d.pressed = true;
+        setLastDirection("right");
         break;
-      case "f":
-        socket.emit("flash", ({direction : lastDirection}));
     }
   };
-
+  
   const handleKeyUp = (e: KeyboardEvent) => {
-    if (!gameStarted) return;
     let key = e.key;
     if (!["w", "a", "s", "d"].includes(key)) return;
+  
+    setIsMoving(false); // Player stops moving
+  
     switch (key) {
       case "w":
         keys.w.pressed = false;
@@ -197,6 +260,17 @@ export default function RuneterraReflexCanvas() {
         break;
     }
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isMoving) {
+        setAnimationFrame((prev) => (prev === 0 ? 1 : 0)); // Toggle between 0 and 1
+      }
+    }, 200); // Adjust speed as needed
+  
+    return () => clearInterval(interval);
+  }, [isMoving]);  
+  
 
   useEffect(() => {
     if (!gameStarted) return;
