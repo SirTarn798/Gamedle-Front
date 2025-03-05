@@ -236,6 +236,9 @@ export default function RuneterraReflexCanvas() {
         keys.d.pressed = true;
         setLastDirection("right");
         break;
+      case "f":
+        socket.emit("flash");
+        break;
     }
   };
   
