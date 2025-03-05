@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
+
 const socket = io("http://localhost:4000"); // Change to your server URL
 
 const canvasWidth = 800;
@@ -28,6 +29,7 @@ export default function RuneterraReflexCanvas() {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [joinRoomId, setJoinRoomId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [lastDirection, setLastDirection] = useState<string | null>(null)
 
   const handleQueueUp = () => {
     socket.emit("findMatch", { username: "x" });
@@ -130,12 +132,29 @@ export default function RuneterraReflexCanvas() {
       pressed: false,
     },
   };
-  setInterval(() => {
-    if (keys.w.pressed) socket.emit("move", { key: "w" });
-    if (keys.a.pressed) socket.emit("move", { key: "a" });
-    if (keys.s.pressed) socket.emit("move", { key: "s" });
-    if (keys.d.pressed) socket.emit("move", { key: "d" });
-  }, 15);
+
+  useEffect(() => {
+    if (!gameStarted) return;
+    
+    const movementInterval = setInterval(() => {
+      let directionChanged = false;
+      
+      if (keys.w.pressed) {
+        socket.emit("move", { key: "w", playerDirection : "up" });
+      }
+      if (keys.a.pressed) {
+        socket.emit("move", { key: "a", playerDirection : "left" });
+      }
+      if (keys.s.pressed) {
+        socket.emit("move", { key: "s", playerDirection : "down" });
+      }
+      if (keys.d.pressed) {
+        socket.emit("move", { key: "d", playerDirection : "right" });
+      }
+    }, 15);
+    
+    return () => clearInterval(movementInterval);
+  }, [gameStarted]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!gameStarted) return;
@@ -155,7 +174,7 @@ export default function RuneterraReflexCanvas() {
         keys.d.pressed = true;
         break;
       case "f":
-        socket.emit("flash");
+        socket.emit("flash", ({direction : lastDirection}));
     }
   };
 
@@ -181,10 +200,10 @@ export default function RuneterraReflexCanvas() {
 
   useEffect(() => {
     if (!gameStarted) return;
-    
+
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
-  
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
