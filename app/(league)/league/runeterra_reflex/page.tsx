@@ -24,7 +24,7 @@ type Player = {
   y: number;
   trap: number;
   flash: boolean;
-  direction : string;
+  direction: string;
 };
 
 interface Arrow {
@@ -33,60 +33,78 @@ interface Arrow {
   y: number;
 }
 
+type Room = {
+  roomId: string;
+  private: boolean;
+  players: Record<string, Player>;
+  status: "ongoing" | "waiting";
+  owner: string;
+} | null;
+
+// Define a GameState type to make state management clearer
+type GameState = "menu" | "queuing" | "waitingRoom" | "playing";
+
 export default function RuneterraReflexCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [players, setPlayers] = useState<{ [id: string]: Player }>({});
   const [arrows, setArrows] = useState<Arrow[]>([]);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [roomId, setRoomId] = useState<string | null>(null);
+  const [gameState, setGameState] = useState<GameState>("menu");
+  const [room, setRoom] = useState<Room>(null);
   const [joinRoomId, setJoinRoomId] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [lastDirection, setLastDirection] = useState<string>("right")
+  const [lastDirection, setLastDirection] = useState<string>("right");
   const playerImages = useRef<{ [key: string]: HTMLImageElement[] }>({});
   const [animationFrame, setAnimationFrame] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
 
-
-
   const handleQueueUp = () => {
     socket.emit("findMatch", { username: "x" });
-    setLoading(true);
+    setGameState("queuing");
 
     socket.on("matchFound", ({ roomId }) => {
       console.log("Match found! Room:", roomId);
-      setRoomId(roomId);
-      setGameStarted(true);
+      setRoom(roomId);
+      setGameState("playing");
     });
   };
 
   const handleCancelQueue = () => {
     socket.emit("cancelQueue");
-    setLoading(false);
+    setGameState("menu");
   };
+
+  const handleLeaveRoom = () => {
+    socket.emit("leaveRoom");
+    setGameState("menu");
+  }
 
   const handleCreateRoom = () => {
     socket.emit("createRoom");
 
-    socket.on("roomCreated", ({ roomId }) => {
-      console.log("Room created! Room ID:", roomId);
-      setRoomId(roomId);
-      setGameStarted(true);
+    socket.on("roomCreated", ({ room }) => {
+      console.log("Room created! Room ID:", room.roomId);
+      setRoom(room);
+      setGameState("waitingRoom");
     });
+
   };
+
+  socket.on("playerJoin", (data) => {
+      setRoom(data.room);
+    })
 
   const handleJoinRoom = () => {
     if (!joinRoomId) return;
     socket.emit("joinRoom", { roomId: joinRoomId });
-    setLoading(true);
 
-    socket.on("roomJoined", ({ roomId }) => {
-      console.log("Joined room:", roomId);
-      setRoomId(roomId);
-      setGameStarted(true);
+    socket.on("roomJoined", (data) => {
+      console.log(data)
+      console.log("Joined room:", data.room.roomId);
+      setRoom(data.room);
+      setGameState("waitingRoom");
     });
 
-    socket.on("roomNotFound", () => {
-      alert("Room not found! Please check the ID.");
+    socket.on("joinError", (data) => {
+      alert(data.error);
     });
   };
 
@@ -108,22 +126,20 @@ export default function RuneterraReflexCanvas() {
       images.right[0].src = right1.src;
       images.right[1].src = right2.src;
 
-      Object.values(images).flat().forEach((img) => {
-        img.onload = () => {
-          playerImages.current = images;
-        };
-      });
+      Object.values(images)
+        .flat()
+        .forEach((img) => {
+          img.onload = () => {
+            playerImages.current = images;
+          };
+        });
     };
 
     loadImages();
   }, []);
 
   useEffect(() => {
-    if (!gameStarted) return;
-  }, [gameStarted]);
-
-  useEffect(() => {
-    if (!gameStarted) return;
+    if (gameState !== "playing") return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -132,25 +148,29 @@ export default function RuneterraReflexCanvas() {
 
     const draw = () => {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    
-      Object.entries(players).forEach(([id, player]) => {     
+      ctx.fillStyle = "#4CAF50";
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      
+      Object.entries(players).forEach(([id, player]) => {
         const frames = playerImages.current[player.direction]; // Get correct direction sprites
         console.log("frames:", frames);
-    
+
         if (!frames) {
           return;
         }
-    
+
         const sprite = isMoving ? frames[animationFrame] : frames[0]; // Choose frame
-    
+
         if (sprite) {
           ctx.drawImage(sprite, player.x, player.y, playerSize, playerSize);
+          ctx.fillStyle = socket.id == id ? "yellow" : "white";
+          ctx.fillText(player.username, player.x, player.y + 5);
         } else {
           ctx.fillStyle = id === socket.id ? "blue" : "red";
           ctx.fillRect(player.x, player.y, playerSize, playerSize);
         }
       });
-    
+
       // Draw arrows
       arrows.forEach((arrow) => {
         ctx.fillStyle = "black";
@@ -158,10 +178,10 @@ export default function RuneterraReflexCanvas() {
       });
     };
     draw();
-  }, [players, arrows, gameStarted]);
+  }, [players, arrows, gameState]);
 
   useEffect(() => {
-    if (!gameStarted) return;
+    if (gameState !== "playing") return;
 
     const updatePlayers = (updatedPlayers: { [id: string]: Player }) => {
       setPlayers(updatedPlayers);
@@ -172,7 +192,7 @@ export default function RuneterraReflexCanvas() {
     });
 
     return () => socket.off("updatePlayers");
-  }, [gameStarted]);
+  }, [gameState]);
 
   const keys = {
     w: {
@@ -190,11 +210,9 @@ export default function RuneterraReflexCanvas() {
   };
 
   useEffect(() => {
-    if (!gameStarted) return;
+    if (gameState !== "playing") return;
 
     const movementInterval = setInterval(() => {
-      let directionChanged = false;
-
       if (keys.w.pressed) {
         socket.emit("move", { key: "w", playerDirection: "up" });
       }
@@ -210,15 +228,15 @@ export default function RuneterraReflexCanvas() {
     }, 15);
 
     return () => clearInterval(movementInterval);
-  }, [gameStarted]);
+  }, [gameState]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (!gameStarted) return;
+    if (gameState !== "playing") return;
     let key = e.key;
     if (!["w", "a", "s", "d", "f"].includes(key)) return;
-  
+
     setIsMoving(true); // Player is moving
-  
+
     switch (key) {
       case "w":
         keys.w.pressed = true;
@@ -241,13 +259,13 @@ export default function RuneterraReflexCanvas() {
         break;
     }
   };
-  
+
   const handleKeyUp = (e: KeyboardEvent) => {
     let key = e.key;
     if (!["w", "a", "s", "d"].includes(key)) return;
-  
+
     setIsMoving(false); // Player stops moving
-  
+
     switch (key) {
       case "w":
         keys.w.pressed = false;
@@ -270,13 +288,12 @@ export default function RuneterraReflexCanvas() {
         setAnimationFrame((prev) => (prev === 0 ? 1 : 0)); // Toggle between 0 and 1
       }
     }, 200); // Adjust speed as needed
-  
+
     return () => clearInterval(interval);
-  }, [isMoving]);  
-  
+  }, [isMoving]);
 
   useEffect(() => {
-    if (!gameStarted) return;
+    if (gameState !== "playing") return;
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
@@ -285,51 +302,90 @@ export default function RuneterraReflexCanvas() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [gameStarted]);
+  }, [gameState]);
 
-  return !gameStarted ? (
-    !loading ? (
-      <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
-        <h1 className="text-2xl font-bold">Runeterra Reflex</h1>
-        <button onClick={handleQueueUp} className="btn-primary">
-          Queue Up!
-        </button>
-        <button onClick={handleCreateRoom} className="btn-primary">
-          Create Room
-        </button>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Enter Room ID"
-            value={joinRoomId}
-            onChange={(e) => setJoinRoomId(e.target.value)}
-            className="border p-2"
+  // Render appropriate UI based on game state
+  const renderGameUI = () => {
+    switch (gameState) {
+      case "menu":
+        return (
+          <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
+            <h1 className="text-2xl font-bold">Runeterra Reflex</h1>
+            <button onClick={handleQueueUp} className="btn-primary">
+              Queue Up!
+            </button>
+            <button onClick={handleCreateRoom} className="btn-primary">
+              Create Room
+            </button>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Enter Room ID"
+                value={joinRoomId}
+                onChange={(e) => setJoinRoomId(e.target.value)}
+                className="border p-2 text-black"
+              />
+              <button onClick={handleJoinRoom} className="btn-primary">
+                Join Room
+              </button>
+            </div>
+          </div>
+        );
+        
+      case "queuing":
+        return (
+          <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
+            <div className="flex flex-col items-center justify-center">
+              <h1 className="text-3xl">Waiting for other players</h1>
+              <div className="animate-spin h-16 w-16 border-4 border-gray-300 border-t-black rounded-full m-10"></div>
+              <button
+                className="bg-cancelRed py-2 px-5"
+                onClick={handleCancelQueue}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        );
+        
+      case "waitingRoom":
+        return (
+          <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
+            <div className="flex flex-col items-center justify-center">
+              <h1 className="text-3xl">Room: {room?.roomId}</h1>
+              <div className="flex justify-center gap-10">
+                {room?.players &&
+                  Object.entries(room.players).map(([id, player]) => (
+                    <div key={id} className="flex flex-col items-center">
+                      <img src="/user.png" height={75} width={75} alt="" />
+                      <p>{player.username}</p>
+                    </div>
+                  ))}
+              </div>
+              <button
+                className="bg-cancelRed py-2 px-5 mt-4"
+                onClick={handleLeaveRoom}
+              >
+                Leave Room
+              </button>
+            </div>
+          </div>
+        );
+        
+      case "playing":
+        return (
+          <canvas
+            ref={canvasRef}
+            width={canvasWidth}
+            height={canvasHeight}
+            style={{ border: "1px solid black" }}
           />
-          <button onClick={handleJoinRoom} className="btn-primary">
-            Join Room
-          </button>
-        </div>
-      </div>
-    ) : (
-      <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
-        <div className="flex flex-col items-center justify-center">
-          <h1 className="text-3xl">Waiting for other players</h1>
-          <div className="animate-spin h-16 w-16 border-4 border-gray-300 border-t-black rounded-full m-10"></div>
-          <button
-            className="bg-cancelRed py-2 px-5"
-            onClick={handleCancelQueue}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    )
-  ) : (
-    <canvas
-      ref={canvasRef}
-      width={canvasWidth}
-      height={canvasHeight}
-      style={{ border: "1px solid black" }}
-    />
-  );
+        );
+        
+      default:
+        return <div>Something went wrong!</div>;
+    }
+  };
+
+  return renderGameUI();
 }
