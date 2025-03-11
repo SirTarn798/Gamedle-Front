@@ -44,6 +44,8 @@ type Room = {
 // Define a GameState type to make state management clearer
 type GameState = "menu" | "queuing" | "waitingRoom" | "playing";
 
+socket.emit("register", {username : "TarnJirayu"})
+
 export default function RuneterraReflexCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [players, setPlayers] = useState<{ [id: string]: Player }>({});
@@ -60,9 +62,9 @@ export default function RuneterraReflexCanvas() {
     socket.emit("findMatch", { username: "x" });
     setGameState("queuing");
 
-    socket.on("matchFound", ({ roomId }) => {
-      console.log("Match found! Room:", roomId);
-      setRoom(roomId);
+    socket.on("matchFound", (room) => {
+      console.log("Match found! Room:" , room.roomId);
+      setRoom(room);
       setGameState("playing");
     });
   };
@@ -75,7 +77,7 @@ export default function RuneterraReflexCanvas() {
   const handleLeaveRoom = () => {
     socket.emit("leaveRoom");
     setGameState("menu");
-  }
+  };
 
   const handleCreateRoom = () => {
     socket.emit("createRoom");
@@ -85,28 +87,35 @@ export default function RuneterraReflexCanvas() {
       setRoom(room);
       setGameState("waitingRoom");
     });
-
   };
 
   socket.on("playerJoin", (data) => {
-      setRoom(data.room);
-    })
+    setRoom(data.room);
+  });
 
   const handleJoinRoom = () => {
     if (!joinRoomId) return;
     socket.emit("joinRoom", { roomId: joinRoomId });
 
     socket.on("roomJoined", (data) => {
-      console.log(data)
+      console.log(data);
       console.log("Joined room:", data.room.roomId);
       setRoom(data.room);
       setGameState("waitingRoom");
     });
-
-    socket.on("joinError", (data) => {
-      alert(data.error);
-    });
   };
+
+  const handleStartRoom = () => {
+    socket.emit("startRoom", {roomId : room?.roomId});
+  }
+
+  socket.on("error", (data) => {
+    alert(data.error);
+  });
+
+  socket.on("roomStarted", () => {
+    setGameState("playing");
+  })
 
   useEffect(() => {
     const loadImages = () => {
@@ -150,10 +159,9 @@ export default function RuneterraReflexCanvas() {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       ctx.fillStyle = "#4CAF50";
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-      
+
       Object.entries(players).forEach(([id, player]) => {
         const frames = playerImages.current[player.direction]; // Get correct direction sprites
-        console.log("frames:", frames);
 
         if (!frames) {
           return;
@@ -331,7 +339,7 @@ export default function RuneterraReflexCanvas() {
             </div>
           </div>
         );
-        
+
       case "queuing":
         return (
           <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
@@ -347,7 +355,7 @@ export default function RuneterraReflexCanvas() {
             </div>
           </div>
         );
-        
+
       case "waitingRoom":
         return (
           <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
@@ -368,10 +376,25 @@ export default function RuneterraReflexCanvas() {
               >
                 Leave Room
               </button>
+              { socket.id === room?.owner ?
+                <button
+                  className={`py-2 px-5 mt-4 ${
+                    !room?.players || Object.keys(room.players).length !== 3
+                      ? "bg-mainTheme border-2 border-borderColor cursor-not-allowed"
+                      : "bg-acceptGreen"
+                  }`}
+                  disabled={
+                    !room?.players || Object.keys(room.players).length !== 3
+                  }
+                  onClick={handleStartRoom}
+                >
+                  Start game
+                </button> : null
+              }
             </div>
           </div>
         );
-        
+
       case "playing":
         return (
           <canvas
@@ -381,7 +404,7 @@ export default function RuneterraReflexCanvas() {
             style={{ border: "1px solid black" }}
           />
         );
-        
+
       default:
         return <div>Something went wrong!</div>;
     }
