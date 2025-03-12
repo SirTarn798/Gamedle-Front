@@ -44,7 +44,7 @@ type Room = {
 // Define a GameState type to make state management clearer
 type GameState = "menu" | "queuing" | "waitingRoom" | "playing";
 
-socket.emit("register", {username : "TarnJirayu"})
+socket.emit("register", { username: "TarnJirayu" })
 
 export default function RuneterraReflexCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -57,13 +57,14 @@ export default function RuneterraReflexCanvas() {
   const playerImages = useRef<{ [key: string]: HTMLImageElement[] }>({});
   const [animationFrame, setAnimationFrame] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
+  const [hoveredPlayer, setHoveredPlayer] = useState<string | null>(null);
 
   const handleQueueUp = () => {
     socket.emit("findMatch", { username: "x" });
     setGameState("queuing");
 
     socket.on("matchFound", (room) => {
-      console.log("Match found! Room:" , room.roomId);
+      console.log("Match found! Room:", room.roomId);
       setRoom(room);
       setGameState("playing");
     });
@@ -89,10 +90,6 @@ export default function RuneterraReflexCanvas() {
     });
   };
 
-  socket.on("playerJoin", (data) => {
-    setRoom(data.room);
-  });
-
   const handleJoinRoom = () => {
     if (!joinRoomId) return;
     socket.emit("joinRoom", { roomId: joinRoomId });
@@ -105,9 +102,17 @@ export default function RuneterraReflexCanvas() {
     });
   };
 
-  const handleStartRoom = () => {
-    socket.emit("startRoom", {roomId : room?.roomId});
+  const handleKick = (id: string) => {
+    socket.emit("kick", { kick: id });
   }
+
+  const handleStartRoom = () => {
+    socket.emit("startRoom", { roomId: room?.roomId });
+  }
+
+  socket.on("playerJoin", (data) => {
+    setRoom(data.room);
+  });
 
   socket.on("error", (data) => {
     alert(data.error);
@@ -115,6 +120,11 @@ export default function RuneterraReflexCanvas() {
 
   socket.on("roomStarted", () => {
     setGameState("playing");
+  })
+
+  socket.on("kicked", () => {
+    setGameState("menu");
+    setRoom(null);
   })
 
   useEffect(() => {
@@ -360,12 +370,31 @@ export default function RuneterraReflexCanvas() {
         return (
           <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
             <div className="flex flex-col items-center justify-center">
-              <h1 className="text-3xl">Room: {room?.roomId}</h1>
+              <div className="flex flex-col gap-1 w-full items-center">
+                <h1 className="text-3xl">Room : {room?.roomId}</h1>
+                <h1 className={`text-3xl ${room?.players && Object.keys(room.players).length === 3 ? "text-acceptGreen" : "text-cancelRed"}`}>Players : {room?.players && Object.keys(room.players).length}/3</h1>
+
+              </div>
               <div className="flex justify-center gap-10">
                 {room?.players &&
                   Object.entries(room.players).map(([id, player]) => (
-                    <div key={id} className="flex flex-col items-center">
-                      <img src="/user.png" height={75} width={75} alt="" />
+                    <div
+                      key={id}
+                      className="flex flex-col items-center"
+                      onClick={() => (socket.id !== room.owner || id === room.owner ? null : handleKick(id))}
+                      onMouseEnter={() => setHoveredPlayer(id)} // Track hovered player
+                      onMouseLeave={() => setHoveredPlayer(null)}
+                    >
+                      <img
+                        src={
+                          hoveredPlayer === id && id !== room.owner && socket.id === room.owner
+                            ? "/KickPlayer.png"
+                            : "/user.png"
+                        }
+                        height={75}
+                        width={75}
+                        alt=""
+                      />
                       <p>{player.username}</p>
                     </div>
                   ))}
@@ -376,13 +405,12 @@ export default function RuneterraReflexCanvas() {
               >
                 Leave Room
               </button>
-              { socket.id === room?.owner ?
+              {socket.id === room?.owner ?
                 <button
-                  className={`py-2 px-5 mt-4 ${
-                    !room?.players || Object.keys(room.players).length !== 3
-                      ? "bg-mainTheme border-2 border-borderColor cursor-not-allowed"
-                      : "bg-acceptGreen"
-                  }`}
+                  className={`py-2 px-5 mt-4 ${!room?.players || Object.keys(room.players).length !== 3
+                    ? "bg-mainTheme border-2 border-borderColor cursor-not-allowed"
+                    : "bg-acceptGreen"
+                    }`}
                   disabled={
                     !room?.players || Object.keys(room.players).length !== 3
                   }
