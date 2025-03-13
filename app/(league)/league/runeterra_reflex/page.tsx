@@ -18,6 +18,15 @@ const canvasWidth = 800;
 const canvasHeight = 600;
 const playerSize = 50;
 
+type Room = {
+  roomId: string;
+  private: boolean;
+  players: Record<string, Player>;
+  status: "ongoing" | "waiting";
+  owner: string;
+  projectiles: Projectile[];
+} | null;
+
 type Player = {
   username: string;
   x: number;
@@ -27,29 +36,20 @@ type Player = {
   direction: string;
 };
 
-interface Arrow {
+type Projectile = {
   id: string;
   x: number;
   y: number;
-}
-
-type Room = {
-  roomId: string;
-  private: boolean;
-  players: Record<string, Player>;
-  status: "ongoing" | "waiting";
-  owner: string;
-} | null;
+  angle: number;
+};
 
 // Define a GameState type to make state management clearer
 type GameState = "menu" | "queuing" | "waitingRoom" | "playing";
 
-socket.emit("register", { username: "TarnJirayu" })
+socket.emit("register", { username: "TarnJirayu" });
 
 export default function RuneterraReflexCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [players, setPlayers] = useState<{ [id: string]: Player }>({});
-  const [arrows, setArrows] = useState<Arrow[]>([]);
   const [gameState, setGameState] = useState<GameState>("menu");
   const [room, setRoom] = useState<Room>(null);
   const [joinRoomId, setJoinRoomId] = useState("");
@@ -104,11 +104,11 @@ export default function RuneterraReflexCanvas() {
 
   const handleKick = (id: string) => {
     socket.emit("kick", { kick: id });
-  }
+  };
 
   const handleStartRoom = () => {
     socket.emit("startRoom", { roomId: room?.roomId });
-  }
+  };
 
   socket.on("playerJoin", (data) => {
     setRoom(data.room);
@@ -120,12 +120,12 @@ export default function RuneterraReflexCanvas() {
 
   socket.on("roomStarted", () => {
     setGameState("playing");
-  })
+  });
 
   socket.on("kicked", () => {
     setGameState("menu");
     setRoom(null);
-  })
+  });
 
   useEffect(() => {
     const loadImages = () => {
@@ -169,7 +169,8 @@ export default function RuneterraReflexCanvas() {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       ctx.fillStyle = "#4CAF50";
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
+      const players = room?.players ?? {};
+      const projectiles = room?.projectiles;
       Object.entries(players).forEach(([id, player]) => {
         const frames = playerImages.current[player.direction]; // Get correct direction sprites
 
@@ -190,26 +191,28 @@ export default function RuneterraReflexCanvas() {
       });
 
       // Draw arrows
-      arrows.forEach((arrow) => {
-        ctx.fillStyle = "black";
-        ctx.fillRect(arrow.x, arrow.y, 10, 20);
-      });
+      if (projectiles) {
+        projectiles.forEach((projectile) => {
+          ctx.fillStyle = "black";
+          ctx.fillRect(projectile.x, projectile.y, 10, 20);
+        });
+      }
     };
     draw();
-  }, [players, arrows, gameState]);
+  }, [room, gameState]);
 
   useEffect(() => {
     if (gameState !== "playing") return;
 
-    const updatePlayers = (updatedPlayers: { [id: string]: Player }) => {
-      setPlayers(updatedPlayers);
+    const updateRoom = (room: Room) => {
+      setRoom(room);
     };
 
-    socket.on("updatePlayers", (updatedPlayers) => {
-      updatePlayers(updatedPlayers);
+    socket.on("updateRoom", (room) => {
+      updateRoom(room);
     });
 
-    return () => socket.off("updatePlayers");
+    return () => socket.off("updateRoom");
   }, [gameState]);
 
   const keys = {
@@ -372,8 +375,16 @@ export default function RuneterraReflexCanvas() {
             <div className="flex flex-col items-center justify-center">
               <div className="flex flex-col gap-1 w-full items-center">
                 <h1 className="text-3xl">Room : {room?.roomId}</h1>
-                <h1 className={`text-3xl ${room?.players && Object.keys(room.players).length === 3 ? "text-acceptGreen" : "text-cancelRed"}`}>Players : {room?.players && Object.keys(room.players).length}/3</h1>
-
+                <h1
+                  className={`text-3xl ${
+                    room?.players && Object.keys(room.players).length === 3
+                      ? "text-acceptGreen"
+                      : "text-cancelRed"
+                  }`}
+                >
+                  Players : {room?.players && Object.keys(room.players).length}
+                  /3
+                </h1>
               </div>
               <div className="flex justify-center gap-10">
                 {room?.players &&
@@ -381,13 +392,19 @@ export default function RuneterraReflexCanvas() {
                     <div
                       key={id}
                       className="flex flex-col items-center"
-                      onClick={() => (socket.id !== room.owner || id === room.owner ? null : handleKick(id))}
+                      onClick={() =>
+                        socket.id !== room.owner || id === room.owner
+                          ? null
+                          : handleKick(id)
+                      }
                       onMouseEnter={() => setHoveredPlayer(id)} // Track hovered player
                       onMouseLeave={() => setHoveredPlayer(null)}
                     >
                       <img
                         src={
-                          hoveredPlayer === id && id !== room.owner && socket.id === room.owner
+                          hoveredPlayer === id &&
+                          id !== room.owner &&
+                          socket.id === room.owner
                             ? "/KickPlayer.png"
                             : "/user.png"
                         }
@@ -405,20 +422,21 @@ export default function RuneterraReflexCanvas() {
               >
                 Leave Room
               </button>
-              {socket.id === room?.owner ?
+              {socket.id === room?.owner ? (
                 <button
-                  className={`py-2 px-5 mt-4 ${!room?.players || Object.keys(room.players).length !== 3
-                    ? "bg-mainTheme border-2 border-borderColor cursor-not-allowed"
-                    : "bg-acceptGreen"
-                    }`}
+                  className={`py-2 px-5 mt-4 ${
+                    !room?.players || Object.keys(room.players).length !== 3
+                      ? "bg-mainTheme border-2 border-borderColor cursor-not-allowed"
+                      : "bg-acceptGreen"
+                  }`}
                   disabled={
                     !room?.players || Object.keys(room.players).length !== 3
                   }
                   onClick={handleStartRoom}
                 >
                   Start game
-                </button> : null
-              }
+                </button>
+              ) : null}
             </div>
           </div>
         );
