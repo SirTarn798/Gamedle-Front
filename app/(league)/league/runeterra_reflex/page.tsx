@@ -11,12 +11,16 @@ import left1 from "@/public/playerMovement/left1.png";
 import left2 from "@/public/playerMovement/left2.png";
 import right1 from "@/public/playerMovement/right1.png";
 import right2 from "@/public/playerMovement/right2.png";
+import arrow from "@/public/arrow.png";
 
 const socket = io("http://localhost:4000"); // Change to your server URL
 
+const arrowSprite = new Image();
+arrowSprite.src = arrow.src;
 const canvasWidth = 800;
 const canvasHeight = 600;
 const playerSize = 50;
+const arrowSize = 70;
 
 type Room = {
   roomId: string;
@@ -193,8 +197,20 @@ export default function RuneterraReflexCanvas() {
       // Draw arrows
       if (projectiles) {
         projectiles.forEach((projectile) => {
-          ctx.fillStyle = "black";
-          ctx.fillRect(projectile.x, projectile.y, 10, 20);
+          // Save the current context state
+          ctx.save();
+          
+          // Move to arrow position
+          ctx.translate(projectile.x, projectile.y);
+          
+          // Rotate
+          ctx.rotate(projectile.angle + Math.PI/2);
+
+          // Draw arrow at origin (0,0) since we've translated to its position
+          ctx.drawImage(arrowSprite, 0, 0, arrowSize, arrowSize);
+          
+          // Restore the context to its original state
+          ctx.restore();
         });
       }
     };
