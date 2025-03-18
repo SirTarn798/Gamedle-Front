@@ -1,4 +1,3 @@
-// NavBarClient.js
 'use client'
 
 import Image from "next/image";
@@ -11,6 +10,9 @@ function NavBarClient({ isLoggedIn, onLogout, userName, userID }) {
                     <Image src="/Logo.png" height={120} width={180} alt="Logo" className="m-3"/>
                 </a>
                 <div className="flex gap-10 m-3 text-white items-center text-3xl">
+                    <a href="/upload">
+                        <button className="p-2 pixelBorder">UPLOAD</button>
+                    </a>
                     <a href="/login">
                         <button className="">SIGN IN</button>
                     </a>
