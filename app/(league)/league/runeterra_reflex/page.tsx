@@ -28,7 +28,8 @@ type Room = {
   players: Record<string, Player>;
   status: "ongoing" | "waiting";
   owner: string;
-  projectiles: Projectile[];
+  projectiles: Record<string, Projectile>;
+  level: number;
 } | null;
 
 type Player = {
@@ -183,32 +184,38 @@ export default function RuneterraReflexCanvas() {
         }
 
         const sprite = isMoving ? frames[animationFrame] : frames[0]; // Choose frame
+        const playerX = player.x - playerSize / 2;
+        const playerY = player.y - playerSize / 2;
 
-        if (sprite) {
-          ctx.drawImage(sprite, player.x, player.y, playerSize, playerSize);
-          ctx.fillStyle = socket.id == id ? "yellow" : "white";
-          ctx.fillText(player.username, player.x, player.y + 5);
-        } else {
-          ctx.fillStyle = id === socket.id ? "blue" : "red";
-          ctx.fillRect(player.x, player.y, playerSize, playerSize);
-        }
+        // if (sprite) {
+        //   ctx.drawImage(sprite, player.x, player.y, playerSize, playerSize);
+        //   ctx.fillStyle = socket.id == id ? "yellow" : "white";
+        //   ctx.fillText(player.username, player.x, player.y + 5);
+        // } else {
+        //   ctx.fillStyle = id === socket.id ? "blue" : "red";
+        //   ctx.fillRect(player.x, player.y, playerSize, playerSize);
+        // }
+        ctx.fillStyle = "#A5BC9F";
+        ctx.fillRect(playerX, playerY, playerSize, playerSize);
+        ctx.fillStyle = "#E95050";
+        ctx.fillRect(playerX, playerY, 3, 3);
       });
 
       // Draw arrows
       if (projectiles) {
-        projectiles.forEach((projectile) => {
+        Object.entries(projectiles).forEach(([id, projectile]) => {
           // Save the current context state
           ctx.save();
-          
+
           // Move to arrow position
           ctx.translate(projectile.x, projectile.y);
-          
+
           // Rotate
-          ctx.rotate(projectile.angle + Math.PI/2);
+          ctx.rotate(projectile.angle + Math.PI / 2);
 
           // Draw arrow at origin (0,0) since we've translated to its position
           ctx.drawImage(arrowSprite, 0, 0, arrowSize, arrowSize);
-          
+
           // Restore the context to its original state
           ctx.restore();
         });
