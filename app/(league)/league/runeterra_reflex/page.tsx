@@ -21,6 +21,7 @@ const canvasWidth = 800;
 const canvasHeight = 600;
 const playerSize = 50;
 const arrowSize = 70;
+const projectileRadius = 25;
 
 type Room = {
   roomId: string;
@@ -39,6 +40,7 @@ type Player = {
   trap: number;
   flash: boolean;
   direction: string;
+  health: 0 | 1 | 2 | 3;
 };
 
 type Projectile = {
@@ -58,7 +60,7 @@ export default function RuneterraReflexCanvas() {
   const [gameState, setGameState] = useState<GameState>("menu");
   const [room, setRoom] = useState<Room>(null);
   const [joinRoomId, setJoinRoomId] = useState("");
-  const [lastDirection, setLastDirection] = useState<string>("right");
+  const [playerInformation, setPlayerInformation] = useState<Record<string, { username: string, health: 0 | 1 | 2 | 3 }>>();
   const playerImages = useRef<{ [key: string]: HTMLImageElement[] }>({});
   const [animationFrame, setAnimationFrame] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
@@ -68,9 +70,18 @@ export default function RuneterraReflexCanvas() {
     socket.emit("findMatch", { username: "x" });
     setGameState("queuing");
 
-    socket.on("matchFound", (room) => {
-      console.log("Match found! Room:", room.roomId);
+    socket.on("matchFound", (room: Room) => {
+      console.log("Match found! Room:", room?.roomId);
       setRoom(room);
+      console.log(room)
+      setPlayerInformation(
+        Object.entries(room?.players || {}).reduce<Record<string, { username: string, health: 0 | 1 | 2 | 3 }>>((acc, [id, player]) => {
+          acc[id] = { username: player.username, health: player.health }; // Add more properties if needed
+          return acc;
+        }, {})
+      );
+
+
       setGameState("playing");
     });
   };
@@ -124,6 +135,12 @@ export default function RuneterraReflexCanvas() {
   });
 
   socket.on("roomStarted", () => {
+    setPlayerInformation(
+      Object.entries(room?.players || {}).reduce<Record<string, { username: string, health: 0 | 1 | 2 | 3 }>>((acc, [id, player]) => {
+        acc[id] = { username: player.username, health: player.health }; // Add more properties if needed
+        return acc;
+      }, {})
+    );
     setGameState("playing");
   });
 
@@ -187,38 +204,58 @@ export default function RuneterraReflexCanvas() {
         const playerX = player.x - playerSize / 2;
         const playerY = player.y - playerSize / 2;
 
-        // if (sprite) {
-        //   ctx.drawImage(sprite, player.x, player.y, playerSize, playerSize);
-        //   ctx.fillStyle = socket.id == id ? "yellow" : "white";
-        //   ctx.fillText(player.username, player.x, player.y + 5);
-        // } else {
-        //   ctx.fillStyle = id === socket.id ? "blue" : "red";
-        //   ctx.fillRect(player.x, player.y, playerSize, playerSize);
-        // }
-        ctx.fillStyle = "#A5BC9F";
-        ctx.fillRect(playerX, playerY, playerSize, playerSize);
-        ctx.fillStyle = "#E95050";
-        ctx.fillRect(playerX, playerY, 3, 3);
+        if (sprite) {
+          ctx.drawImage(sprite, playerX, playerY, playerSize, playerSize);
+          ctx.fillStyle = socket.id == id ? "yellow" : "white";
+          ctx.fillText(player.username, playerX, playerY + 5);
+        } else {
+          ctx.fillStyle = id === socket.id ? "blue" : "red";
+          ctx.fillRect(playerX, playerY, playerSize, playerSize);
+        }
+        // ctx.fillStyle = "#A5BC9F";
+        // ctx.fillRect(playerX, playerY, playerSize, playerSize);
+        // ctx.fillStyle = "#E95050";
+        // ctx.fillRect(player.x, player.y, 3, 3);
+
+
       });
 
       // Draw arrows
       if (projectiles) {
         Object.entries(projectiles).forEach(([id, projectile]) => {
-          // Save the current context state
           ctx.save();
-
-          // Move to arrow position
           ctx.translate(projectile.x, projectile.y);
-
-          // Rotate
           ctx.rotate(projectile.angle + Math.PI / 2);
-
-          // Draw arrow at origin (0,0) since we've translated to its position
-          ctx.drawImage(arrowSprite, 0, 0, arrowSize, arrowSize);
-
-          // Restore the context to its original state
+          // Draw the arrow centered at the origin instead of at the top-left
+          ctx.drawImage(arrowSprite, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
           ctx.restore();
         });
+      }
+      const showHitboxes = false;
+
+      if (showHitboxes) {
+        // Draw player hitboxes
+        Object.entries(players).forEach(([id, player]) => {
+          // Draw player hitbox - using player.x, player.y as center point
+          const playerRadius = playerSize / 2;
+          ctx.beginPath();
+          ctx.arc(player.x, player.y, playerRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = socket.id === id ? "yellow" : "red";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        });
+
+        // Draw projectile hitboxes
+        if (projectiles) {
+          Object.entries(projectiles).forEach(([id, projectile]) => {
+            // Draw projectile hitbox
+            ctx.beginPath();
+            ctx.arc(projectile.x, projectile.y, projectileRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = "orange";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          });
+        }
       }
     };
     draw();
@@ -284,19 +321,15 @@ export default function RuneterraReflexCanvas() {
     switch (key) {
       case "w":
         keys.w.pressed = true;
-        setLastDirection("up");
         break;
       case "a":
         keys.a.pressed = true;
-        setLastDirection("left");
         break;
       case "s":
         keys.s.pressed = true;
-        setLastDirection("down");
         break;
       case "d":
         keys.d.pressed = true;
-        setLastDirection("right");
         break;
       case "f":
         socket.emit("flash");
@@ -399,11 +432,10 @@ export default function RuneterraReflexCanvas() {
               <div className="flex flex-col gap-1 w-full items-center">
                 <h1 className="text-3xl">Room : {room?.roomId}</h1>
                 <h1
-                  className={`text-3xl ${
-                    room?.players && Object.keys(room.players).length === 3
-                      ? "text-acceptGreen"
-                      : "text-cancelRed"
-                  }`}
+                  className={`text-3xl ${room?.players && Object.keys(room.players).length === 3
+                    ? "text-acceptGreen"
+                    : "text-cancelRed"
+                    }`}
                 >
                   Players : {room?.players && Object.keys(room.players).length}
                   /3
@@ -426,8 +458,8 @@ export default function RuneterraReflexCanvas() {
                       <img
                         src={
                           hoveredPlayer === id &&
-                          id !== room.owner &&
-                          socket.id === room.owner
+                            id !== room.owner &&
+                            socket.id === room.owner
                             ? "/KickPlayer.png"
                             : "/user.png"
                         }
@@ -447,11 +479,10 @@ export default function RuneterraReflexCanvas() {
               </button>
               {socket.id === room?.owner ? (
                 <button
-                  className={`py-2 px-5 mt-4 ${
-                    !room?.players || Object.keys(room.players).length !== 3
-                      ? "bg-mainTheme border-2 border-borderColor cursor-not-allowed"
-                      : "bg-acceptGreen"
-                  }`}
+                  className={`py-2 px-5 mt-4 ${!room?.players || Object.keys(room.players).length !== 3
+                    ? "bg-mainTheme border-2 border-borderColor cursor-not-allowed"
+                    : "bg-acceptGreen"
+                    }`}
                   disabled={
                     !room?.players || Object.keys(room.players).length !== 3
                   }
@@ -466,13 +497,33 @@ export default function RuneterraReflexCanvas() {
 
       case "playing":
         return (
-          <canvas
-            ref={canvasRef}
-            width={canvasWidth}
-            height={canvasHeight}
-            style={{ border: "1px solid black" }}
-          />
+          <div className="flex">
+            <div className="flex flex-col gap-3 w-full">
+              {Object.entries(playerInformation || {}).map(([id, player]) => (
+                <div key={id} className="bg-mainTheme p-5 border border-4 border-white">
+                  <p className={id === socket.id ? "text-yellow-300" : "text-white"}>{player.username}</p>
+                  <div className="flex gap-2">
+                    {[...Array(3)].map((_, index) => (
+                      <img
+                        key={index}
+                        src={index < player.health ? "/FullHeart.png" : "/DamagedHeart.png"}
+                        alt={index < player.health ? "Full Heart" : "Damaged Heart"}
+                        className="w-6 h-6"
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <canvas
+              ref={canvasRef}
+              width={canvasWidth}
+              height={canvasHeight}
+              style={{ border: "1px solid black" }}
+            />
+          </div>
         );
+
 
       default:
         return <div>Something went wrong!</div>;
