@@ -12,11 +12,18 @@ import left2 from "@/public/playerMovement/left2.png";
 import right1 from "@/public/playerMovement/right1.png";
 import right2 from "@/public/playerMovement/right2.png";
 import arrow from "@/public/arrow.png";
+import hitArrow from "@/public/HitArrow.png";
+import flash from "@/public/Flash.png";
+import { drawLevelIndicator } from "@/lib/drawingFuncs";
 
 const socket = io("http://localhost:4000"); // Change to your server URL
 
 const arrowSprite = new Image();
+const hitArrowSprite = new Image();
+const flashSprite = new Image();
 arrowSprite.src = arrow.src;
+hitArrowSprite.src = hitArrow.src;
+flashSprite.src = flash.src;
 const canvasWidth = 800;
 const canvasHeight = 600;
 const playerSize = 50;
@@ -41,6 +48,7 @@ type Player = {
   flash: boolean;
   direction: string;
   health: 0 | 1 | 2 | 3;
+  invulnerable: boolean;
 };
 
 type Projectile = {
@@ -48,6 +56,7 @@ type Projectile = {
   x: number;
   y: number;
   angle: number;
+  hit: boolean;
 };
 
 // Define a GameState type to make state management clearer
@@ -65,6 +74,9 @@ export default function RuneterraReflexCanvas() {
   const [animationFrame, setAnimationFrame] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
   const [hoveredPlayer, setHoveredPlayer] = useState<string | null>(null);
+  const [flash, setFlash] = useState<boolean>(false);
+  const [flashCount, setFlashCount] = useState<number>(20);
+  const [flashCooldown, setFlashCooldown] = useState<number>(0);
 
   const handleQueueUp = () => {
     socket.emit("findMatch", { username: "x" });
@@ -134,6 +146,11 @@ export default function RuneterraReflexCanvas() {
     alert(data.error);
   });
 
+  socket.on("flashed", () => {
+    setFlash(true);
+    setFlashCooldown(10);
+  })
+
   socket.on("roomStarted", () => {
     setPlayerInformation(
       Object.entries(room?.players || {}).reduce<Record<string, { username: string, health: 0 | 1 | 2 | 3 }>>((acc, [id, player]) => {
@@ -148,6 +165,39 @@ export default function RuneterraReflexCanvas() {
     setGameState("menu");
     setRoom(null);
   });
+
+  // socket.on("playerHit", (data) => {
+  //   console.log(room);
+  //   if (playerInformation) {
+  //     setPlayerInformation((prev) => ({
+  //       ...prev,
+  //       [data.socketId]: {
+  //         ...(prev?.[data.socketId] || {}), // Ensure it exists before spreading
+  //         health: room?.players[data.socketId].health, // Default health to 0 if undefined
+  //       },
+  //     }));
+  //   }
+  // });
+  useEffect(() => {
+    let timer: any;
+
+    if (flashCooldown > 0) {
+      timer = setInterval(() => {
+        setFlashCooldown((prevCount) => {
+          if (prevCount <= 1) {
+            clearInterval(timer);
+            setFlash(false);
+            return 0;
+          }
+          return prevCount - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [flashCooldown]);
 
   useEffect(() => {
     const loadImages = () => {
@@ -193,6 +243,7 @@ export default function RuneterraReflexCanvas() {
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
       const players = room?.players ?? {};
       const projectiles = room?.projectiles;
+
       Object.entries(players).forEach(([id, player]) => {
         const frames = playerImages.current[player.direction]; // Get correct direction sprites
 
@@ -200,43 +251,68 @@ export default function RuneterraReflexCanvas() {
           return;
         }
 
-        const sprite = isMoving ? frames[animationFrame] : frames[0]; // Choose frame
-        const playerX = player.x - playerSize / 2;
-        const playerY = player.y - playerSize / 2;
+        // Check if player is invulnerable and should be visible in the blink cycle
+        // This creates a blinking effect by making the player visible/invisible every few frames
+        // Math.floor(Date.now() / 100) % 2 === 0 toggles between true/false every 100ms
+        const isVisible = !player.invulnerable || (Math.floor(Date.now() / 100) % 2 === 0);
 
-        if (sprite) {
-          ctx.drawImage(sprite, playerX, playerY, playerSize, playerSize);
-          ctx.fillStyle = socket.id == id ? "yellow" : "white";
-          ctx.fillText(player.username, playerX, playerY + 5);
-        } else {
-          ctx.fillStyle = id === socket.id ? "blue" : "red";
-          ctx.fillRect(playerX, playerY, playerSize, playerSize);
+        if (isVisible) {
+          const sprite = isMoving ? frames[animationFrame] : frames[0]; // Choose frame
+          const playerX = player.x - playerSize / 2;
+          const playerY = player.y - playerSize / 2;
+
+          if (sprite) {
+            // If player is invulnerable but visible, make it semi-transparent
+            if (player.invulnerable) {
+              ctx.globalAlpha = 0.5; // 50% opacity for invulnerable players
+            }
+            if (flashCount <= 0) {
+              setFlash(false);
+              setFlashCount(20);
+            }
+            flash && (id === socket.id) ? ctx.drawImage(flashSprite, playerX, playerY, playerSize, playerSize) : ctx.drawImage(sprite, playerX, playerY, playerSize, playerSize);
+            if (flash) {
+              setFlashCount((prev) => { return prev - 1 });
+            }
+            // Reset opacity for other elements
+            if (player.invulnerable) {
+              ctx.globalAlpha = 1.0;
+            }
+
+            ctx.fillStyle = socket.id == id ? "yellow" : "white";
+            ctx.fillText(player.username, playerX, playerY + 5);
+
+            ctx.save();
+            drawLevelIndicator(ctx, room?.level || 0, 330, 50);
+            ctx.restore();
+
+          } else {
+            ctx.fillStyle = id === socket.id ? "blue" : "red";
+            if (player.invulnerable) {
+              ctx.globalAlpha = 0.5;
+            }
+            ctx.fillRect(playerX, playerY, playerSize, playerSize);
+            ctx.globalAlpha = 1.0;
+          }
         }
-        // ctx.fillStyle = "#A5BC9F";
-        // ctx.fillRect(playerX, playerY, playerSize, playerSize);
-        // ctx.fillStyle = "#E95050";
-        // ctx.fillRect(player.x, player.y, 3, 3);
-
-
       });
 
-      // Draw arrows
+      // Draw arrows (unchanged)
       if (projectiles) {
         Object.entries(projectiles).forEach(([id, projectile]) => {
           ctx.save();
           ctx.translate(projectile.x, projectile.y);
           ctx.rotate(projectile.angle + Math.PI / 2);
-          // Draw the arrow centered at the origin instead of at the top-left
-          ctx.drawImage(arrowSprite, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
+          !projectile.hit ? ctx.drawImage(arrowSprite, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize) : ctx.drawImage(hitArrowSprite, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
           ctx.restore();
         });
       }
+
       const showHitboxes = false;
 
       if (showHitboxes) {
-        // Draw player hitboxes
+        // Draw hitboxes (unchanged)
         Object.entries(players).forEach(([id, player]) => {
-          // Draw player hitbox - using player.x, player.y as center point
           const playerRadius = playerSize / 2;
           ctx.beginPath();
           ctx.arc(player.x, player.y, playerRadius, 0, Math.PI * 2);
@@ -245,10 +321,8 @@ export default function RuneterraReflexCanvas() {
           ctx.stroke();
         });
 
-        // Draw projectile hitboxes
         if (projectiles) {
           Object.entries(projectiles).forEach(([id, projectile]) => {
-            // Draw projectile hitbox
             ctx.beginPath();
             ctx.arc(projectile.x, projectile.y, projectileRadius, 0, Math.PI * 2);
             ctx.strokeStyle = "orange";
@@ -499,7 +573,7 @@ export default function RuneterraReflexCanvas() {
         return (
           <div className="flex">
             <div className="flex flex-col gap-3 w-full">
-              {Object.entries(playerInformation || {}).map(([id, player]) => (
+              {Object.entries(room?.players || {}).map(([id, player]) => (
                 <div key={id} className="bg-mainTheme p-5 border border-4 border-white">
                   <p className={id === socket.id ? "text-yellow-300" : "text-white"}>{player.username}</p>
                   <div className="flex gap-2">
@@ -514,7 +588,27 @@ export default function RuneterraReflexCanvas() {
                   </div>
                 </div>
               ))}
+              <div className="relative inline-block flex justify-center items-center bg-mainTheme p-5 borber border-4 border-white">
+                {/* Flash icon */}
+                <img
+                  src="/FlashIcon.webp"
+                  alt="Flash"
+                  className={`borber border-4 border-yellow-300 w-16 h-16 ${flashCooldown > 0 ? 'opacity-50 grayscale' : ''}`}
+                />
+
+                {/* Countdown overlay - fixed positioning */}
+                {flashCooldown > 0 && (
+                  <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
+                    <div className="p-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-10 h-10">
+                      <span className="p-0 text-2xl font-bold text-white">
+                        {flashCooldown}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
+
             <canvas
               ref={canvasRef}
               width={canvasWidth}
