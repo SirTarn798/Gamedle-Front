@@ -8,26 +8,40 @@ export function LoginForm() {
   const [state, loginAction] = useActionState(login, undefined);
 
   return (
-    <form action={loginAction} className="flex max-w-[300px] flex-col gap-2">
-      <div className="flex flex-col gap-2">
-        <input id="email" name="email" placeholder="Email" />
-      </div>
-      {state?.errors?.email && (
-        <p className="text-red-500">{state.errors.email}</p>
-      )}
-
-      <div className="flex flex-col gap-2">
+    <form action={loginAction} className="w-4/12 bg-mainTheme bg-opacity-50 p-6 rounded-lg text-white">
+      <div className="grid grid-cols-[auto_1fr] gap-4 items-center">
+        <h1>email</h1>
+        <input 
+          id="email" 
+          name="email" 
+          placeholder="Email"
+          className="text-secondaryColor p-2 rounded-md border-2 border-secondaryColor bg-mainTheme text-lg"
+         />
+        <h1>password</h1>
         <input
           id="password"
           name="password"
           type="password"
           placeholder="Password"
+          className="text-secondaryColor p-2 rounded-md border-2 border-secondaryColor bg-mainTheme text-lg"
         />
       </div>
-      {state?.errors?.password && (
-        <p className="text-red-500">{state.errors.password}</p>
-      )}
-      <SubmitButton />
+      <div className="flex-col items-center justify-center">
+        {state?.errors?.email && (
+          <div className="mt-6 text-red-500 place-self-center">{state.errors.email}</div>
+        )}
+        {state?.errors?.password && (
+          <div className="text-red-500 place-self-center">{state.errors.password}</div>
+        )}
+        <div className="mt-6 place-self-center">
+          <button
+            type="submit"
+            className="border-2 border-white hover:bg-acceptGreen hover:border-0 hover:text-black text-white px-8 py-2 rounded-md transition-colors duration-200 font-medium"
+          >
+            Sign Up
+          </button>
+        </div>
+      </div>
     </form>
   );
 }

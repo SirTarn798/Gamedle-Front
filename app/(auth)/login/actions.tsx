@@ -6,6 +6,15 @@ import { redirect } from "next/navigation";
 
 const testUser = {
   id: "1",
+  name: "steve",
+  role: "user",
+  email: "admin@gmail.com",
+  password: "12345678",
+};
+const testUserStaff = {
+  id: "1",
+  name: "steve",
+  role: "staff",
   email: "admin@gmail.com",
   password: "12345678",
 };
@@ -38,7 +47,7 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  await createSession(testUser.id);
+  await createSession(testUser.id, testUser.name, testUser.role);
   if (previousUrl) {
     redirect(previousUrl);
   } else {

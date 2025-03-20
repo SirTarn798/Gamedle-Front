@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-function NavBarClient({ isLoggedIn, onLogout, userName, userID }) {
+function NavBarClient({ isLoggedIn, onLogout, user }) {
     if(!isLoggedIn) {
         return(
             <nav className="flex justify-between w-full h-fit bg-mainTheme border-4 border-borderColor items-center">
@@ -31,8 +31,8 @@ function NavBarClient({ isLoggedIn, onLogout, userName, userID }) {
             <div className="flex gap-10 m-3 text-white items-center text-3xl">
                 <img></img>
                 <div className="flex-col">
-                    <div>userName : {userName}</div>
-                    <div>score</div>
+                    <div>userName : {user[1]}</div>
+                    <div>role {user[2]}</div>
                 </div>
                 <button onClick={onLogout} className="text-3xl p-2 pixelBorder">logout</button>
             </div>
