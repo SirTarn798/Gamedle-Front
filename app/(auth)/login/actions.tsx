@@ -29,30 +29,65 @@ const loginSchema = z.object({
 });
 
 export async function login(prevState: any, formData: FormData) {
-  const result = loginSchema.safeParse(Object.fromEntries(formData));
+  console.log(formData)
+  // console.log(formData.get('email')); // Correct way to get email
+  // console.log(formData.get('password')); // Correct way to get password
+  const userEmail = formData.get('email');
+  const userPassword = formData.get('password');
 
-  if (!result.success) {
-    return {
-      errors: result.error.flatten().fieldErrors,
-    };
-  }
+  const response = await fetch('http://localhost/api/login', {
+    method: 'POST',
+    headers: {
+      Accept: 'application.json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email: userEmail, password: userPassword }),
+  });
+  console.log(response);
+  const data = await response.json();
+  console.log("Login successful:", data);
 
-  const { email, password, previousUrl } = result.data;
+  const message = data.message;
+  const token = data.token;
+  const user = data.user;
 
-  if (email !== testUser.email || password !== testUser.password) {
-    return {
-      errors: {
-        email: ["Invalid email or password"],
-      },
-    };
-  }
-
-  await createSession(testUser.id, testUser.name, testUser.role);
-  if (previousUrl) {
-    redirect(previousUrl);
+  if ( response.status == 200) {
+    console.log("200 OK p ja")
   } else {
-    redirect("/");
+    return {
+      error: message,
+    };
   }
+
+  await createSession(token, user);
+  redirect("/");
+
+
+
+  // const result = loginSchema.safeParse(Object.fromEntries(formData));
+
+  // if (!response.ok) {
+  //   return {
+  //     errors: response.error.flatten().fieldErrors,
+  //   };
+  // }
+
+  // const { email, password, previousUrl } = response.data;
+
+  // if (email !== testUser.email || password !== testUser.password) {
+  //   return {
+  //     errors: {
+  //       email: ["Invalid email or password"],
+  //     },
+  //   };
+  // }
+
+  // await createSession(testUser.id, testUser.name, testUser.role);
+  // if (previousUrl) {
+  //   redirect(previousUrl);
+  // } else {
+  //   redirect("/");
+  // }
 }
 
 export async function logout() {
