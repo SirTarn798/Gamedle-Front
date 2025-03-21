@@ -49,6 +49,7 @@ type Player = {
   direction: string;
   health: 0 | 1 | 2 | 3;
   invulnerable: boolean;
+  status : "alive" | "dead" | "disconnected";
 };
 
 type Projectile = {
@@ -575,7 +576,7 @@ export default function RuneterraReflexCanvas() {
             <div className="flex flex-col gap-3 w-full">
               {Object.entries(room?.players || {}).map(([id, player]) => (
                 <div key={id} className="bg-mainTheme p-5 border border-4 border-white">
-                  <p className={id === socket.id ? "text-yellow-300" : "text-white"}>{player.username}</p>
+                  <p className={id === socket.id ? "text-yellow-300" : "text-white"}>{player.username} <span className={`font-medium ${player.status === "disconnected" ? "text-stone-400" : player.status === "alive" ? "text-green-400" : "text-red-500"}`}>({player.status[0].toLocaleUpperCase() + player.status.slice(1)})</span></p>
                   <div className="flex gap-2">
                     {[...Array(3)].map((_, index) => (
                       <img
