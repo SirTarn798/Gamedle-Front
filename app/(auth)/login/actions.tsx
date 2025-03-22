@@ -1,10 +1,11 @@
 "use server";
 
-import { createSession, deleteSession } from "@/lib/session";
+import { createSession, decrypt, deleteSession } from "@/lib/session";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function login(prevState: any, formData: FormData) {
-  console.log(formData)
+
   const userEmail = formData.get('email');
   const userPassword = formData.get('password');
 
@@ -17,24 +18,24 @@ export async function login(prevState: any, formData: FormData) {
       },
       body: JSON.stringify({ email: userEmail, password: userPassword }),
     });
-    console.log(response);
+
     const data = await response.json();
-    console.log("Login successful:", data);
-  
     const message = data.message;
     const token = data.token;
     const user = data.user;
   
     if ( response.status != 200) {
+      console.log("status code", response.status, "message", message);
+      console.log("message = ", message);
       return {
         errors: {
           message: message,
         },
       };
+    } else {
+      console.log("Login successful:", data);
+      await createSession(token, user);
     }
-  
-    await createSession(token, user);
-    redirect("/");
   } catch (error) {
     return {
       errors: {
@@ -42,35 +43,27 @@ export async function login(prevState: any, formData: FormData) {
       },
     };
   }
-
-
-  // const result = loginSchema.safeParse(Object.fromEntries(formData));
-
-  // if (!response.ok) {
-  //   return {
-  //     errors: response.error.flatten().fieldErrors,
-  //   };
-  // }
-
-  // const { email, password, previousUrl } = response.data;
-
-  // if (email !== testUser.email || password !== testUser.password) {
-  //   return {
-  //     errors: {
-  //       email: ["Invalid email or password"],
-  //     },
-  //   };
-  // }
-
-  // await createSession(testUser.id, testUser.name, testUser.role);
-  // if (previousUrl) {
-  //   redirect(previousUrl);
-  // } else {
-  //   redirect("/");
-  // }
+  redirect("/");
 }
 
 export async function logout() {
+  const cookie = (await cookies()).get("session")?.value;
+  const session = await decrypt(cookie);
+  try {
+    const response = await fetch('http://localhost/api/revoke', {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application.json',
+        Authorization: `Bearer ${session?.token}`,
+      },
+    });
+  } catch (error) {
+    return {
+      errors: {
+        message: "Cannot connect to server",
+      },
+    };
+  }
   await deleteSession();
   redirect("/");
 }
