@@ -148,7 +148,7 @@ export default function RuneterraReflexCanvas() {
   });
 
   socket.on("error", (data) => {
-    alert(data.error);
+    toast.error(`${data.error}`, {toastId : "error"})
   });
 
   socket.on("flashed", () => {
@@ -170,6 +170,7 @@ export default function RuneterraReflexCanvas() {
 
   socket.on("kicked", () => {
     setGameState("menu");
+    toast.info("You got kicked ✌😭", {toastId : "kicked"})
     setRoom(null);
   });
 
@@ -177,9 +178,11 @@ export default function RuneterraReflexCanvas() {
     toast(
       Toast({
         title: "Game Result",
-        text: `You got ${
+        text: `${
+          data.place === 1 ? "💪🤴" : data.place === 2 ? "🤏✨" : "💀😭"
+        } You got ${
           data.place === 1 ? "1st" : data.place === 2 ? "2nd" : "3rd"
-        } place`,
+        } place.`,
         bg:
           data.place === 1
             ? "bg-lime-400"
@@ -189,7 +192,7 @@ export default function RuneterraReflexCanvas() {
       }),
       {closeButton : true,
         position : "top-center",
-        toastId : "onlyone",
+        toastId : "gamresult",
       }
     );
     setRoom(null);
@@ -280,7 +283,7 @@ export default function RuneterraReflexCanvas() {
       Object.entries(players).forEach(([id, player]) => {
         const frames = playerImages.current[player.direction]; // Get correct direction sprites
 
-        if (!frames) {
+        if (!frames || player.status === "dead" || player.status === "disconnected") {
           return;
         }
 
