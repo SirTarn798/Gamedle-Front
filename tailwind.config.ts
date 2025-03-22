@@ -15,6 +15,8 @@ export default {
         borderColor : "#B4CAE5",
         secondaryColor : "#E254FF",
         acceptGreen : "#84EA65",
+        cancelRed : "#E95050",
+        notReady : "#A5BC9F"
       },
       fontFamily: {
         jersey: ["Jersey 10", "cursive"], // Ensure it's correctly formatted

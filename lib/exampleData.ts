@@ -1,4 +1,4 @@
-import { LeagueClassicInput } from "./type";
+import { LeagueClassicInput, LeagueSearch } from "./type";
 
 export const championsData: LeagueClassicInput[] = [
   {
@@ -70,161 +70,13 @@ export const championsData: LeagueClassicInput[] = [
       status: true,
     },
   },
-  {
-    image: "/api/placeholder/48/48", // Using placeholder for demo
-    role: {
-      role: "Mid",
-      status: true,
-    },
-    type: {
-      type: "Assassin",
-      status: true,
-    },
-    range: {
-      range: "melee",
-      status: true,
-    },
-    resource: {
-      resource: "None",
-      status: true,
-    },
-    gender: {
-      gender: "female",
-      status: true,
-    },
-  },
-  {
-    image: "/api/placeholder/48/48", // Using placeholder for demo
-    role: {
-      role: "Mid",
-      status: true,
-    },
-    type: {
-      type: "Assassin",
-      status: true,
-    },
-    range: {
-      range: "melee",
-      status: true,
-    },
-    resource: {
-      resource: "None",
-      status: true,
-    },
-    gender: {
-      gender: "female",
-      status: true,
-    },
-  },{
-    image: "/api/placeholder/48/48", // Using placeholder for demo
-    role: {
-      role: "Mid",
-      status: true,
-    },
-    type: {
-      type: "Assassin",
-      status: true,
-    },
-    range: {
-      range: "melee",
-      status: true,
-    },
-    resource: {
-      resource: "None",
-      status: true,
-    },
-    gender: {
-      gender: "female",
-      status: true,
-    },
-  },{
-    image: "/api/placeholder/48/48", // Using placeholder for demo
-    role: {
-      role: "Mid",
-      status: true,
-    },
-    type: {
-      type: "Assassin",
-      status: true,
-    },
-    range: {
-      range: "melee",
-      status: true,
-    },
-    resource: {
-      resource: "None",
-      status: true,
-    },
-    gender: {
-      gender: "female",
-      status: true,
-    },
-  },{
-    image: "/api/placeholder/48/48", // Using placeholder for demo
-    role: {
-      role: "Mid",
-      status: true,
-    },
-    type: {
-      type: "Assassin",
-      status: true,
-    },
-    range: {
-      range: "melee",
-      status: true,
-    },
-    resource: {
-      resource: "None",
-      status: true,
-    },
-    gender: {
-      gender: "female",
-      status: true,
-    },
-  },{
-    image: "/api/placeholder/48/48", // Using placeholder for demo
-    role: {
-      role: "Mid",
-      status: true,
-    },
-    type: {
-      type: "Assassin",
-      status: true,
-    },
-    range: {
-      range: "melee",
-      status: true,
-    },
-    resource: {
-      resource: "None",
-      status: true,
-    },
-    gender: {
-      gender: "female",
-      status: true,
-    },
-  },{
-    image: "/api/placeholder/48/48", // Using placeholder for demo
-    role: {
-      role: "Mid",
-      status: true,
-    },
-    type: {
-      type: "Assassin",
-      status: true,
-    },
-    range: {
-      range: "melee",
-      status: true,
-    },
-    resource: {
-      resource: "None",
-      status: true,
-    },
-    gender: {
-      gender: "female",
-      status: true,
-    },
-  },
-  
 ];
+
+export const searchChampionData : LeagueSearch[] = [
+  {
+    name : "Ezreal",
+    image : "/api",
+    title : "I'm not European."
+  }
+
+]
