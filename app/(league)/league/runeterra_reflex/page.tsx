@@ -15,6 +15,8 @@ import arrow from "@/public/arrow.png";
 import hitArrow from "@/public/HitArrow.png";
 import flash from "@/public/Flash.png";
 import { drawLevelIndicator } from "@/lib/drawingFuncs";
+import { toast, ToastContentProps } from "react-toastify";
+import Toast from "@/app/components/Toast";
 
 const socket = io("http://localhost:4000"); // Change to your server URL
 
@@ -49,7 +51,7 @@ type Player = {
   direction: string;
   health: 0 | 1 | 2 | 3;
   invulnerable: boolean;
-  status : "alive" | "dead" | "disconnected";
+  status: "alive" | "dead" | "disconnected";
 };
 
 type Projectile = {
@@ -70,7 +72,8 @@ export default function RuneterraReflexCanvas() {
   const [gameState, setGameState] = useState<GameState>("menu");
   const [room, setRoom] = useState<Room>(null);
   const [joinRoomId, setJoinRoomId] = useState("");
-  const [playerInformation, setPlayerInformation] = useState<Record<string, { username: string, health: 0 | 1 | 2 | 3 }>>();
+  const [playerInformation, setPlayerInformation] =
+    useState<Record<string, { username: string; health: 0 | 1 | 2 | 3 }>>();
   const playerImages = useRef<{ [key: string]: HTMLImageElement[] }>({});
   const [animationFrame, setAnimationFrame] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
@@ -86,14 +89,15 @@ export default function RuneterraReflexCanvas() {
     socket.on("matchFound", (room: Room) => {
       console.log("Match found! Room:", room?.roomId);
       setRoom(room);
-      console.log(room)
+      console.log(room);
       setPlayerInformation(
-        Object.entries(room?.players || {}).reduce<Record<string, { username: string, health: 0 | 1 | 2 | 3 }>>((acc, [id, player]) => {
+        Object.entries(room?.players || {}).reduce<
+          Record<string, { username: string; health: 0 | 1 | 2 | 3 }>
+        >((acc, [id, player]) => {
           acc[id] = { username: player.username, health: player.health }; // Add more properties if needed
           return acc;
         }, {})
       );
-
 
       setGameState("playing");
     });
@@ -150,11 +154,13 @@ export default function RuneterraReflexCanvas() {
   socket.on("flashed", () => {
     setFlash(true);
     setFlashCooldown(10);
-  })
+  });
 
   socket.on("roomStarted", () => {
     setPlayerInformation(
-      Object.entries(room?.players || {}).reduce<Record<string, { username: string, health: 0 | 1 | 2 | 3 }>>((acc, [id, player]) => {
+      Object.entries(room?.players || {}).reduce<
+        Record<string, { username: string; health: 0 | 1 | 2 | 3 }>
+      >((acc, [id, player]) => {
         acc[id] = { username: player.username, health: player.health }; // Add more properties if needed
         return acc;
       }, {})
@@ -165,6 +171,32 @@ export default function RuneterraReflexCanvas() {
   socket.on("kicked", () => {
     setGameState("menu");
     setRoom(null);
+  });
+
+  socket.on("gameResult", (data) => {
+    toast(
+      Toast({
+        title: "Game Result",
+        text: `You got ${
+          data.place === 1 ? "1st" : data.place === 2 ? "2nd" : "3rd"
+        } place`,
+        bg:
+          data.place === 1
+            ? "bg-lime-400"
+            : data.place === 2
+            ? "bg-amber-300"
+            : "bg-red-500",
+      }),
+      {closeButton : true,
+        position : "top-center",
+        toastId : "onlyone",
+      }
+    );
+    setRoom(null);
+    setGameState("menu");
+    // redirect("/league/game") : does not reload
+    // router.reload() : Error, invalid hook call
+    // window.location.reload() : Spits tens of toast notification & lag & doesn't not fully refresh
   });
 
   // socket.on("playerHit", (data) => {
@@ -255,7 +287,8 @@ export default function RuneterraReflexCanvas() {
         // Check if player is invulnerable and should be visible in the blink cycle
         // This creates a blinking effect by making the player visible/invisible every few frames
         // Math.floor(Date.now() / 100) % 2 === 0 toggles between true/false every 100ms
-        const isVisible = !player.invulnerable || (Math.floor(Date.now() / 100) % 2 === 0);
+        const isVisible =
+          !player.invulnerable || Math.floor(Date.now() / 100) % 2 === 0;
 
         if (isVisible) {
           const sprite = isMoving ? frames[animationFrame] : frames[0]; // Choose frame
@@ -271,9 +304,19 @@ export default function RuneterraReflexCanvas() {
               setFlash(false);
               setFlashCount(20);
             }
-            flash && (id === socket.id) ? ctx.drawImage(flashSprite, playerX, playerY, playerSize, playerSize) : ctx.drawImage(sprite, playerX, playerY, playerSize, playerSize);
+            flash && id === socket.id
+              ? ctx.drawImage(
+                  flashSprite,
+                  playerX,
+                  playerY,
+                  playerSize,
+                  playerSize
+                )
+              : ctx.drawImage(sprite, playerX, playerY, playerSize, playerSize);
             if (flash) {
-              setFlashCount((prev) => { return prev - 1 });
+              setFlashCount((prev) => {
+                return prev - 1;
+              });
             }
             // Reset opacity for other elements
             if (player.invulnerable) {
@@ -286,7 +329,6 @@ export default function RuneterraReflexCanvas() {
             ctx.save();
             drawLevelIndicator(ctx, room?.level || 0, 330, 50);
             ctx.restore();
-
           } else {
             ctx.fillStyle = id === socket.id ? "blue" : "red";
             if (player.invulnerable) {
@@ -304,7 +346,21 @@ export default function RuneterraReflexCanvas() {
           ctx.save();
           ctx.translate(projectile.x, projectile.y);
           ctx.rotate(projectile.angle + Math.PI / 2);
-          !projectile.hit ? ctx.drawImage(arrowSprite, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize) : ctx.drawImage(hitArrowSprite, -arrowSize / 2, -arrowSize / 2, arrowSize, arrowSize);
+          !projectile.hit
+            ? ctx.drawImage(
+                arrowSprite,
+                -arrowSize / 2,
+                -arrowSize / 2,
+                arrowSize,
+                arrowSize
+              )
+            : ctx.drawImage(
+                hitArrowSprite,
+                -arrowSize / 2,
+                -arrowSize / 2,
+                arrowSize,
+                arrowSize
+              );
           ctx.restore();
         });
       }
@@ -325,7 +381,13 @@ export default function RuneterraReflexCanvas() {
         if (projectiles) {
           Object.entries(projectiles).forEach(([id, projectile]) => {
             ctx.beginPath();
-            ctx.arc(projectile.x, projectile.y, projectileRadius, 0, Math.PI * 2);
+            ctx.arc(
+              projectile.x,
+              projectile.y,
+              projectileRadius,
+              0,
+              Math.PI * 2
+            );
             ctx.strokeStyle = "orange";
             ctx.lineWidth = 2;
             ctx.stroke();
@@ -507,10 +569,11 @@ export default function RuneterraReflexCanvas() {
               <div className="flex flex-col gap-1 w-full items-center">
                 <h1 className="text-3xl">Room : {room?.roomId}</h1>
                 <h1
-                  className={`text-3xl ${room?.players && Object.keys(room.players).length === 3
-                    ? "text-acceptGreen"
-                    : "text-cancelRed"
-                    }`}
+                  className={`text-3xl ${
+                    room?.players && Object.keys(room.players).length === 3
+                      ? "text-acceptGreen"
+                      : "text-cancelRed"
+                  }`}
                 >
                   Players : {room?.players && Object.keys(room.players).length}
                   /3
@@ -533,8 +596,8 @@ export default function RuneterraReflexCanvas() {
                       <img
                         src={
                           hoveredPlayer === id &&
-                            id !== room.owner &&
-                            socket.id === room.owner
+                          id !== room.owner &&
+                          socket.id === room.owner
                             ? "/KickPlayer.png"
                             : "/user.png"
                         }
@@ -554,10 +617,11 @@ export default function RuneterraReflexCanvas() {
               </button>
               {socket.id === room?.owner ? (
                 <button
-                  className={`py-2 px-5 mt-4 ${!room?.players || Object.keys(room.players).length !== 3
-                    ? "bg-mainTheme border-2 border-borderColor cursor-not-allowed"
-                    : "bg-acceptGreen"
-                    }`}
+                  className={`py-2 px-5 mt-4 ${
+                    !room?.players || Object.keys(room.players).length !== 3
+                      ? "bg-mainTheme border-2 border-borderColor cursor-not-allowed"
+                      : "bg-acceptGreen"
+                  }`}
                   disabled={
                     !room?.players || Object.keys(room.players).length !== 3
                   }
@@ -575,14 +639,43 @@ export default function RuneterraReflexCanvas() {
           <div className="flex">
             <div className="flex flex-col gap-3 w-full">
               {Object.entries(room?.players || {}).map(([id, player]) => (
-                <div key={id} className="bg-mainTheme p-5 border border-4 border-white">
-                  <p className={id === socket.id ? "text-yellow-300" : "text-white"}>{player.username} <span className={`font-medium ${player.status === "disconnected" ? "text-stone-400" : player.status === "alive" ? "text-green-400" : "text-red-500"}`}>({player.status[0].toLocaleUpperCase() + player.status.slice(1)})</span></p>
+                <div
+                  key={id}
+                  className="bg-mainTheme p-5 border border-4 border-white"
+                >
+                  <p
+                    className={
+                      id === socket.id ? "text-yellow-300" : "text-white"
+                    }
+                  >
+                    {player.username}{" "}
+                    <span
+                      className={`font-medium ${
+                        player.status === "disconnected"
+                          ? "text-stone-400"
+                          : player.status === "alive"
+                          ? "text-green-400"
+                          : "text-red-500"
+                      }`}
+                    >
+                      (
+                      {player.status[0].toLocaleUpperCase() +
+                        player.status.slice(1)}
+                      )
+                    </span>
+                  </p>
                   <div className="flex gap-2">
                     {[...Array(3)].map((_, index) => (
                       <img
                         key={index}
-                        src={index < player.health ? "/FullHeart.png" : "/DamagedHeart.png"}
-                        alt={index < player.health ? "Full Heart" : "Damaged Heart"}
+                        src={
+                          index < player.health
+                            ? "/FullHeart.png"
+                            : "/DamagedHeart.png"
+                        }
+                        alt={
+                          index < player.health ? "Full Heart" : "Damaged Heart"
+                        }
                         className="w-6 h-6"
                       />
                     ))}
@@ -594,7 +687,9 @@ export default function RuneterraReflexCanvas() {
                 <img
                   src="/FlashIcon.webp"
                   alt="Flash"
-                  className={`borber border-4 border-yellow-300 w-16 h-16 ${flashCooldown > 0 ? 'opacity-50 grayscale' : ''}`}
+                  className={`borber border-4 border-yellow-300 w-16 h-16 ${
+                    flashCooldown > 0 ? "opacity-50 grayscale" : ""
+                  }`}
                 />
 
                 {/* Countdown overlay - fixed positioning */}
@@ -618,7 +713,6 @@ export default function RuneterraReflexCanvas() {
             />
           </div>
         );
-
 
       default:
         return <div>Something went wrong!</div>;
