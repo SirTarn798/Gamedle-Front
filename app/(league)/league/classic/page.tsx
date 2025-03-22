@@ -13,7 +13,7 @@ function LeagueClassic() {
       <form action="" className="w-full relative mb-8">
         <input
           type="text"
-          className="w-full p-3 bg-mainTheme border-4 border-white text-lg"
+          className="w-full p-3 bg-mainTheme border-4 border-white text-2xl text-white"
         />
         <button
           type="submit"
