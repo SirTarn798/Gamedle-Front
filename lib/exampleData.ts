@@ -72,11 +72,39 @@ export const championsData: LeagueClassicInput[] = [
   },
 ];
 
-export const searchChampionData : LeagueSearch[] = [
+export const searchChampionData: LeagueSearch[] = [
   {
-    name : "Ezreal",
-    image : "/api",
-    title : "I'm not European."
+    name: "Ezreal",
+    image: "/api",
+    title: "I'm not European."
+  },
+  {
+    name: "Aatrox",
+    image: "/api",
+    title: "I'm not European."
+  },
+  {
+    name: "Rammus",
+    image: "/api",
+    title: "I'm not European."
+  },
+  {
+    name: "Ahri",
+    image: "/api",
+    title: "I'm not European."
+  },
+  {
+    name: "Kayle",
+    image: "/api",
+    title: "I'm not European."
+  }, {
+    name: "Syndra",
+    image: "/api",
+    title: "I'm not European."
+  }, {
+    name: "Sion",
+    image: "/api",
+    title: "I'm not European."
   }
 
 ]
