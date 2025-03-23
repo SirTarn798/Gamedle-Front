@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
 import { redirect } from "next/dist/server/api-utils";
 
-const protectedRoutes = ["/upload"];
+const protectedRoutes = [""];
 const publicRoutes = ["/login"];
 
 export default async function middleware(req: NextRequest) {
