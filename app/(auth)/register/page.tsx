@@ -6,7 +6,7 @@ function Register() {
       <div className="relative z-10 w-full flex flex-col items-center">
         <h1 className="text-white text-shadow-md text-8xl">REGISTER</h1>
 
-        <form className="w-4/12 bg-mainTheme bg-opacity-50 p-6 rounded-lg">
+        <form className="w-4/12 bg-mainTheme bg-opacity-50 p-6 rounded-lg text-white">
           <div className="grid grid-cols-[auto_1fr] gap-4 items-center">
             <h1 className="text-xl">Username</h1>
             <input
