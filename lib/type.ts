@@ -27,3 +27,8 @@ export type LeagueSearch = {
   name:string,
   title:string,
 }
+
+export type UploadPicture = {
+  type : "champion" | "pokemon"
+  file : "picture" | "icon"
+}
