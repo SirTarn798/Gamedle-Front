@@ -70,40 +70,32 @@ export default function User({ params }: { params: { userId: string } }) {
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
             <div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">User Information</h3>
+              <h3 className="text-2xl leading-6 font-medium text-gray-900">User Information</h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500">Personal details and account information.</p>
             </div>
           </div>
           
           <div className="border-t border-gray-200">
             <div className="px-4 py-5 sm:px-6 flex items-center">
-
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
-                <span className={`mt-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                  user.role === 'ADMIN' 
-                    ? 'bg-green-100 text-green-800' 
-                    : user.role === 'STAFF' 
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {user.role}
-                </span>
-              </div>
+              <h2 className="text-4xl text-gray-900">{user.name}</h2>
             </div>
             
             <dl>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">User ID</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user.id}</dd>
+                <dt className=" font-medium text-gray-500">User ID</dt>
+                <dd className="mt-1  text-gray-900 sm:mt-0 sm:col-span-2">{user.id}</dd>
               </div>
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Email address</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user.email}</dd>
+                <dt className=" font-medium text-gray-500">Role</dt>
+                <dd className="mt-1  text-gray-900 sm:mt-0 sm:col-span-2">{user.role}</dd>
               </div>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Email verified</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                <dt className=" font-medium text-gray-500">Email address</dt>
+                <dd className="mt-1  text-gray-900 sm:mt-0 sm:col-span-2">{user.email}</dd>
+              </div>
+              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt className=" font-medium text-gray-500">Email verified</dt>
+                <dd className="mt-1  text-gray-900 sm:mt-0 sm:col-span-2">
                   {user.email_verified_at ? (
                     <span className="text-green-600">
                       Verified on {new Date(user.email_verified_at).toLocaleDateString()}
@@ -113,15 +105,15 @@ export default function User({ params }: { params: { userId: string } }) {
                   )}
                 </dd>
               </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Account created</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt className=" font-medium text-gray-500">Account created</dt>
+                <dd className="mt-1  text-gray-900 sm:mt-0 sm:col-span-2">
                   {new Date(user.created_at).toLocaleString()}
                 </dd>
               </div>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Last updated</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt className=" font-medium text-gray-500">Last updated</dt>
+                <dd className="mt-1  text-gray-900 sm:mt-0 sm:col-span-2">
                   {new Date(user.updated_at).toLocaleString()}
                 </dd>
               </div>
