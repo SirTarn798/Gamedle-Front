@@ -45,7 +45,7 @@ export type champion = {
   range_type: "melee" | "ranged",
   resource_type: string,
   icon: string,
-  picture: string[];
+  pictures: string[];
 }
 
 export type pokemon = {

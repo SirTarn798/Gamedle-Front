@@ -1,9 +1,9 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 class R2ClientSingleton {
     private static instance: S3Client;
 
-    private constructor() {}
+    private constructor() { }
 
     public static getInstance(): S3Client {
         if (!R2ClientSingleton.instance) {
@@ -21,3 +21,27 @@ class R2ClientSingleton {
 }
 
 export default R2ClientSingleton;
+
+export async function uploadToR2(fileName: string, picture: File) {
+    const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME;
+    const r2Client = R2ClientSingleton.getInstance();
+    const pictureUploadCommand = new PutObjectCommand({
+        Bucket: bucket,
+        Key: fileName,
+        Body: await picture.arrayBuffer(),
+        ContentType: picture.type
+    });
+
+    await r2Client.send(pictureUploadCommand);
+}
+
+export async function deleteFromR2(key: string) {
+    const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME;
+    const r2Client = R2ClientSingleton.getInstance();
+    const deleteCommand = new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: decodeURIComponent(key)
+    });
+    await r2Client.send(deleteCommand);
+
+}
