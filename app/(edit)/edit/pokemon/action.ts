@@ -1,48 +1,33 @@
 "use server"
 
-import R2ClientSingleton from "@/lib/r2";
-import { UpdatePokemonPayload } from "@/lib/type";
+import R2ClientSingleton, { deleteFromR2, uploadToR2 } from "@/lib/r2";
+import { UpdateChampPayload } from "@/lib/type";
 import { generateFileName } from "@/lib/util";
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
-export async function updatePokemon(payload : UpdatePokemonPayload) {
-    console.log(payload)
+export async function updatePokemon(formData: FormData) {
     const s3Client = R2ClientSingleton.getInstance();
 
     const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME;
+    const pokemonName = formData.get('pokemonName') as string;
 
     // Array to store new image URLs
     const newImageUrls: string[] = [];
 
-    // Handle icon upload if new icon exists
-
-    //TARN's NOTE : Fuck .pictures, send .addedPictures and .deletedPictures or .icon to server. Also make this handle Pokemon as well
     // Handle new picture uploads
-    for (const picture of payload.updates.imageChanges.addedPictures) {
-        const pictureKey = `pokemon/picture/${payload.pokemonName}/${generateFileName(picture.name)}`;
-        const pictureUploadCommand = new PutObjectCommand({
-            Bucket: bucket,
-            Key: pictureKey,
-            Body: await picture.arrayBuffer(),
-            ContentType: picture.type
-        });
-
-        await s3Client.send(pictureUploadCommand);
+    const addedPictures = formData.getAll('addedPictures') as File[];
+    for (const picture of addedPictures) {
+        const pictureKey = `pokemon/picture/${pokemonName}/${generateFileName(picture.name)}`;
+        await uploadToR2(pictureKey, picture);
         newImageUrls.push(`${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${pictureKey}`);
     }
 
     // Handle picture deletions
-    for (const pictureUrl of payload.updates.imageChanges.deletedPictures) {
-        // Extract the key from the URL
+    const deletedPictures = formData.getAll('deletedPictures') as string[];
+    for (const pictureUrl of deletedPictures) {
         const key = new URL(pictureUrl).pathname.slice(1);
-        console.log(key)
-        const deleteCommand = new DeleteObjectCommand({
-            Bucket: bucket,
-            Key: decodeURIComponent(key)
-        });
-        console.log("Done deleting : ", payload.updates.imageChanges.deletedPictures)
-        await s3Client.send(deleteCommand);
+        await deleteFromR2(key);
     }
+
     console.log(newImageUrls);
     // Update database with new champion details
     return;

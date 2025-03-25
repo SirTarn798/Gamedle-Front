@@ -9,16 +9,20 @@ interface ChampionInfoProps {
 }
 
 interface ImageChanges {
-    added: File[];
-    deleted: string[];
-    icon?: File;
+  added: File[];
+  deleted: string[];
+  icon?: File;
 
-  }
+}
 
 export default function ChampionInfo({ champ }: ChampionInfoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedChamp, setEditedChamp] = useState<champion>({ ...champ });
-  
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+
   // Track image changes
   const [imageChanges, setImageChanges] = useState<ImageChanges>({
     added: [],
@@ -31,7 +35,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
     pictures: string[];
   }>({
     icon: champ.icon,
-    pictures: champ.picture
+    pictures: champ.pictures
   });
 
   // Refs for file inputs
@@ -40,7 +44,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === "release_date") {
       // Handle date
       setEditedChamp({
@@ -95,7 +99,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
     const files = e.target.files;
     if (files) {
       const newPictureFiles = Array.from(files);
-      
+
       // Update imageChanges with added files
       setImageChanges(prev => ({
         ...prev,
@@ -108,11 +112,11 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
         const reader = new FileReader();
         reader.onloadend = () => {
           newPictureUrls.push(reader.result as string);
-          
+
           if (newPictureUrls.length === files.length) {
             setEditedChamp(prev => ({
               ...prev,
-              picture: [...prev.picture, ...newPictureUrls]
+              pictures: [...prev.pictures, ...newPictureUrls]
             }));
           }
         };
@@ -124,7 +128,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
   const handleDeletePicture = (pictureToDelete: string) => {
     setEditedChamp({
       ...editedChamp,
-      picture: editedChamp.picture.filter(pic => pic !== pictureToDelete)
+      pictures: editedChamp.pictures.filter(pic => pic !== pictureToDelete)
     });
 
     setImageChanges(prev => ({
@@ -134,22 +138,32 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
   };
 
   const handleSave = async () => {
-    // Prepare the payload for server action
-    const payload : UpdateChampPayload = {
-      championName: champ.name,
-      updates: {
-        ...editedChamp,
-        imageChanges: {
-          icon: imageChanges.icon,
-          addedPictures: imageChanges.added, 
-          deletedPictures: imageChanges.deleted 
-        }
-      }
-    };
+    setIsSaving(true);
+    setSaveStatus('idle');
+
+    const formData = new FormData();
+
+    // Add champion name
+    formData.append('championName', champ.name);
+
+    // Add icon if changed
+    if (imageChanges.icon) {
+      formData.append('icon', imageChanges.icon);
+    }
+
+    // Add new pictures
+    imageChanges.added.forEach(file => {
+      formData.append('addedPictures', file);
+    });
+
+    // Add deleted picture URLs
+    imageChanges.deleted.forEach(url => {
+      formData.append('deletedPictures', url);
+    });
 
     try {
-      const result = await updateChampion(payload)
-      
+      const result = await updateChampion(formData);
+
       // Reset state after successful save
       setIsEditing(false);
       setImageChanges({
@@ -158,11 +172,28 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
       });
       setOriginalImages({
         icon: editedChamp.icon,
-        pictures: editedChamp.picture
+        pictures: editedChamp.pictures
       });
+
+      // Set success status
+      setSaveStatus('success');
+
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 3000);
     } catch (error) {
       console.error("Failed to update champion", error);
-      // Handle error (show message, etc.)
+
+      // Set error status
+      setSaveStatus('error');
+
+      // Clear error message after 3 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 3000);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -181,25 +212,49 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
 
   return (
     <div className="bg-gray-800 text-white rounded-lg shadow-lg overflow-hidden">
+      {isSaving && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-700 p-6 rounded-lg flex items-center">
+            <svg className="animate-spin h-5 w-5 mr-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Saving changes...</span>
+          </div>
+        </div>
+      )}
+
+      {saveStatus === 'success' && (
+        <div className="absolute top-0 left-0 right-0 bg-green-600 text-white text-center py-2 z-50">
+          Champion updated successfully!
+        </div>
+      )}
+      {saveStatus === 'error' && (
+        <div className="absolute top-0 left-0 right-0 bg-red-600 text-white text-center py-2 z-50">
+          Failed to update champion. Please try again.
+        </div>
+      )}
+
+
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="relative group">
-              <img 
-                src={isEditing ? editedChamp.icon : champ.icon} 
-                alt={champ.name} 
+              <img
+                src={isEditing ? editedChamp.icon : champ.icon}
+                alt={champ.name}
                 className="w-16 h-16 rounded-full mr-4 border-2 border-yellow-500 group-hover:opacity-50 transition-opacity"
               />
               {isEditing && (
                 <>
-                  <input 
-                    type="file" 
+                  <input
+                    type="file"
                     ref={iconFileInputRef}
                     onChange={handleIconUpload}
                     accept="image/*"
                     className="hidden"
                   />
-                  <button 
+                  <button
                     onClick={() => iconFileInputRef.current?.click()}
                     className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                   >
@@ -231,13 +286,15 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
               )}
             </div>
           </div>
-          <button 
+          <button
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-            className={`px-4 py-2 rounded-md font-medium ${
-              isEditing 
-                ? "bg-green-600 hover:bg-green-700" 
+            disabled={isSaving}
+            className={`px-4 py-2 rounded-md font-medium ${isSaving
+              ? "bg-gray-500 cursor-not-allowed"
+              : (isEditing
+                ? "bg-green-600 hover:bg-green-700"
                 : "bg-blue-600 hover:bg-blue-700"
-            }`}
+              )}`}
           >
             {isEditing ? "Save" : "Edit"}
           </button>
@@ -259,7 +316,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
                 <p>{champ.region}</p>
               )}
             </div>
-            
+
             <div>
               <label className="block text-gray-400 text-sm">Class</label>
               {isEditing ? (
@@ -273,7 +330,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
                 <p>{champ.class}</p>
               )}
             </div>
-            
+
             <div>
               <label className="block text-gray-400 text-sm">Gender</label>
               {isEditing ? (
@@ -292,7 +349,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
               )}
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-gray-400 text-sm mb-1">Role</label>
@@ -316,8 +373,8 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
               ) : (
                 <div className="flex flex-wrap gap-1">
                   {champ.role.map((role, index) => (
-                    <span 
-                      key={index} 
+                    <span
+                      key={index}
                       className="bg-blue-900 px-2 py-1 rounded text-xs capitalize"
                     >
                       {role}
@@ -326,7 +383,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
                 </div>
               )}
             </div>
-            
+
             <div>
               <label className="block text-gray-400 text-sm">Range Type</label>
               {isEditing ? (
@@ -343,7 +400,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
                 <p className="capitalize">{champ.range_type}</p>
               )}
             </div>
-            
+
             <div>
               <label className="block text-gray-400 text-sm">Resource Type</label>
               {isEditing ? (
@@ -359,7 +416,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-4">
           <label className="block text-gray-400 text-sm">Release Date</label>
           {isEditing ? (
@@ -379,8 +436,8 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
             <h3 className="text-xl font-semibold mr-4">Champion Images</h3>
             {isEditing && (
               <>
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   ref={pictureFileInputRef}
                   onChange={handlePictureUpload}
                   accept="image/*"
@@ -399,11 +456,11 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
 
           {/* Picture Gallery Grid */}
           <div className="grid grid-cols-3 gap-4">
-            {(isEditing ? editedChamp.picture : champ.picture).map((picture, index) => (
+            {(isEditing ? editedChamp.pictures : champ.pictures).map((picture, index) => (
               <div key={index} className="relative group">
-                <img 
-                  src={picture} 
-                  alt={`${champ.name} splash ${index}`} 
+                <img
+                  src={picture}
+                  alt={`${champ.name} splash ${index}`}
                   className="w-full h-48 object-cover rounded-lg"
                 />
                 {isEditing && (
@@ -418,7 +475,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
             ))}
           </div>
         </div>
-        
+
         {isEditing && (
           <div className="mt-6 flex justify-end">
             <button

@@ -5,18 +5,20 @@ import { pokemon, UpdatePokemonPayload } from "@/lib/type";
 import { updatePokemon } from "../(edit)/edit/pokemon/action";
 
 interface ImageChanges {
-    added: File[];
-    deleted: string[];
+  added: File[];
+  deleted: string[];
 }
 
 interface PokemonInfoProps {
-    pokemon : pokemon
-  }
+  pokemon: pokemon
+}
 
 export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedPokemon, setEditedPokemon] = useState<pokemon>({ ...pokemon });
-  
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
   // Track image changes
   const [imageChanges, setImageChanges] = useState<ImageChanges>({
     added: [],
@@ -35,7 +37,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     // Convert numeric fields to numbers
     if (name === "height" || name === "weight" || name === "generation" || name === "id") {
       setEditedPokemon({
@@ -78,7 +80,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
     const files = e.target.files;
     if (files) {
       const newPictureFiles = Array.from(files);
-      
+
       // Update imageChanges with added files
       setImageChanges(prev => ({
         ...prev,
@@ -91,7 +93,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
         const reader = new FileReader();
         reader.onloadend = () => {
           newPictureUrls.push(reader.result as string);
-          
+
           if (newPictureUrls.length === files.length) {
             setEditedPokemon(prev => ({
               ...prev,
@@ -116,53 +118,61 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
     }));
   };
 
-//   const handleSave = async () => {
-//     // In a real application, you would send the update to a backend
-//     try {
-//       setIsEditing(false);
-//       setImageChanges({
-//         added: [],
-//         deleted: []
-//       });
-//       setOriginalImages({
-//         pictures: editedPokemon.pictures
-//       });
-//     } catch (error) {
-//       console.error("Failed to update Pokemon", error);
-//       // Handle error (show message, etc.)
-//     }
-//   };
-
   const handleSave = async () => {
-      // Prepare the payload for server action
-      const payload : UpdatePokemonPayload = {
-        pokemonName: pokemon.name,
-        updates: {
-          ...editedPokemon,
-          imageChanges: {
-            addedPictures: imageChanges.added, 
-            deletedPictures: imageChanges.deleted 
-          }
-        }
-      };
+    // Add this line to set saving state
+    setIsSaving(true);
+    // Reset save status
+    setSaveStatus('idle');
   
-      try {
-        const result = await updatePokemon(payload)
-        
-        // Reset state after successful save
-        setIsEditing(false);
-        setImageChanges({
-          added: [],
-          deleted: []
-        });
-        setOriginalImages({
-          pictures: editedPokemon.pictures
-        });
-      } catch (error) {
-        console.error("Failed to update champion", error);
-        // Handle error (show message, etc.)
-      }
-    };
+    const formData = new FormData();
+  
+    // Add champion name
+    formData.append('pokemonName', pokemon.name);
+  
+    // Add new pictures
+    imageChanges.added.forEach(file => {
+      formData.append('addedPictures', file);
+    });
+  
+    // Add deleted picture URLs
+    imageChanges.deleted.forEach(url => {
+      formData.append('deletedPictures', url);
+    });
+  
+    try {
+      const result = await updatePokemon(formData);
+  
+      setIsEditing(false);
+      setImageChanges({
+        added: [],
+        deleted: []
+      });
+      setOriginalImages({
+        pictures: pokemon.pictures
+      });
+  
+      // Set success status
+      setSaveStatus('success');
+  
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 3000);
+    } catch (error) {
+      console.error("Failed to update champion", error);
+  
+      // Set error status
+      setSaveStatus('error');
+  
+      // Clear error message after 3 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 3000);
+    } finally {
+      // Ensure isSaving is set to false even if there's an error
+      setIsSaving(false);
+    }
+  };
 
   const handleCancel = () => {
     // Revert to original state
@@ -176,6 +186,30 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
 
   return (
     <div className="bg-gray-800 text-white rounded-lg shadow-lg overflow-hidden">
+      {isSaving && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-700 p-6 rounded-lg flex items-center">
+            <svg className="animate-spin h-5 w-5 mr-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Saving changes...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Success/Error Message */}
+      {saveStatus === 'success' && (
+        <div className="absolute top-0 left-0 right-0 bg-green-600 text-white text-center py-2 z-50">
+          Champion updated successfully!
+        </div>
+      )}
+      {saveStatus === 'error' && (
+        <div className="absolute top-0 left-0 right-0 bg-red-600 text-white text-center py-2 z-50">
+          Failed to update champion. Please try again.
+        </div>
+      )}
+
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
@@ -202,13 +236,15 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
               )}
             </div>
           </div>
-          <button 
+          <button
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-            className={`px-4 py-2 rounded-md font-medium ${
-              isEditing 
-                ? "bg-green-600 hover:bg-green-700" 
+            disabled={isSaving}
+            className={`px-4 py-2 rounded-md font-medium ${isSaving
+              ? "bg-gray-500 cursor-not-allowed"
+              : (isEditing
+                ? "bg-green-600 hover:bg-green-700"
                 : "bg-blue-600 hover:bg-blue-700"
-            }`}
+              )}`}
           >
             {isEditing ? "Save" : "Edit"}
           </button>
@@ -229,7 +265,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                 <p>{pokemon.type1}</p>
               )}
             </div>
-            
+
             <div>
               <label className="block text-gray-400 text-sm">Type 2</label>
               {isEditing ? (
@@ -244,7 +280,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                 <p>{pokemon.typ2 || "None"}</p>
               )}
             </div>
-            
+
             <div>
               <label className="block text-gray-400 text-sm">Height (m)</label>
               {isEditing ? (
@@ -261,7 +297,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
               )}
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-gray-400 text-sm">Weight (kg)</label>
@@ -278,7 +314,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                 <p>{pokemon.weight} kg</p>
               )}
             </div>
-            
+
             <div>
               <label className="block text-gray-400 text-sm">Generation</label>
               {isEditing ? (
@@ -293,7 +329,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                 <p>Generation {pokemon.generation}</p>
               )}
             </div>
-            
+
             <div>
               <label className="block text-gray-400 text-sm mb-2">Abilities</label>
               {isEditing ? (
@@ -324,8 +360,8 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
               ) : (
                 <div className="flex flex-wrap gap-1">
                   {pokemon.abilities.map((ability, index) => (
-                    <span 
-                      key={index} 
+                    <span
+                      key={index}
                       className="bg-blue-900 px-2 py-1 rounded text-xs"
                     >
                       {ability}
@@ -336,14 +372,14 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-6">
           <div className="flex items-center mb-4">
             <h3 className="text-xl font-semibold mr-4">Pokemon Images</h3>
             {isEditing && (
               <>
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   ref={pictureFileInputRef}
                   onChange={handlePictureUpload}
                   accept="image/*"
@@ -364,9 +400,9 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
           <div className="grid grid-cols-3 gap-4">
             {(isEditing ? editedPokemon.pictures : pokemon.pictures).map((picture, index) => (
               <div key={index} className="relative group">
-                <img 
-                  src={picture} 
-                  alt={`${pokemon.name} splash ${index}`} 
+                <img
+                  src={picture}
+                  alt={`${pokemon.name} splash ${index}`}
                   className="w-full h-48 object-cover rounded-lg"
                 />
                 {isEditing && (
@@ -381,7 +417,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
             ))}
           </div>
         </div>
-        
+
         {isEditing && (
           <div className="mt-6 flex justify-end">
             <button

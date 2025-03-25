@@ -11,7 +11,7 @@ const poke: pokemon = {
   weight: 19.5,
   abilities: ["Synchronize", "Inner-focus", "Magic-guard"],
   generation: 1,
-  pictures: ["https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/pokemon/picture/Abra/2025-03-25T12%3A00%3A05.306Z.jpg", "https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/pokemon/picture/Abra/2025-03-25T12%3A00%3A05.800Z.jpg", "https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/pokemon/picture/Abra/2025-03-25T12%3A00%3A06.153Z.jpg"]
+  pictures: ["https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/pokemon/picture/Abra/2025-03-25T16%3A01%3A23.487Z.jpg", "https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/pokemon/picture/Abra/2025-03-25T16%3A01%3A24.906Z.jpg"]
 };
 
 export default function EditChampion() {
