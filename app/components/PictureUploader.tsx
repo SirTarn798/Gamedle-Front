@@ -259,7 +259,7 @@ export default function PictureUploader(data: UploadPicture) {
     return (
         <div className="relative z-10 w-full flex flex-col items-center" ref={topPageRef}>
             <div className="w-full max-w-4xl p-6 bg-white/10 backdrop-blur-md rounded-lg shadow-lg">
-                <h1 className="text-2xl mb-6 text-white">{capitalizeFirstLetter(data.type)} {capitalizeFirstLetter(data.file)}s Upload</h1>
+                <h1 className={`${data.type === "pokemon" ? "text-mainTheme" : "text-gray-300"} text-2xl mb-6`}>{capitalizeFirstLetter(data.type)} {capitalizeFirstLetter(data.file)}s Upload</h1>
 
                 {/* Fixed position Jump to Save button */}
                 <div className="flex gap-2 sticky top-4 z-20 flex justify-end mb-4">
@@ -296,7 +296,7 @@ export default function PictureUploader(data: UploadPicture) {
                             id="uploadFolder"
                         />
                         <label htmlFor={`uploadFolder`} className="text-white mr-4 py-2 px-4 rounded-lg border-0 text-sm bg-blue-500 text-white hover:bg-blue-600">Choose Folder</label>
-                        <p className="text-gray-300 text-sm italic">Select the folder containing all {data.type} folders</p>
+                        <p className={`${data.type === "pokemon" ? "text-mainTheme" : "text-gray-300"} text-sm italic`}>Select the folder containing all {data.type} folders</p>
                     </div>
                 </div>
 
@@ -403,8 +403,8 @@ export default function PictureUploader(data: UploadPicture) {
                     <p className={`mt-3 text-sm ${message.includes("Error")
                         ? "text-red-300"
                         : message.includes("No ") || message.includes("Please")
-                            ? "text-yellow-300"
-                            : "text-green-300"
+                            ? "text-yellow-900"
+                            : "text-green-900"
                         }`}>
                         {message}
                     </p>
