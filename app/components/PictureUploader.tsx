@@ -18,7 +18,7 @@ interface UploadedUrls {
     }
 }
 
-export default function PictureUploader(data : UploadPicture) {
+export default function PictureUploader(data: UploadPicture) {
     const [imageGroups, setImageGroups] = useState<ImageGroup>({});
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [message, setMessage] = useState<string>("");
@@ -26,7 +26,6 @@ export default function PictureUploader(data : UploadPicture) {
     const folderInputRef = useRef<HTMLInputElement>(null);
     const saveButtonRef = useRef<HTMLButtonElement>(null);
     const topPageRef = useRef<HTMLDivElement>(null);
-
 
     // Process when users select folders directly 
     const handleFolderUpload = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -84,67 +83,6 @@ export default function PictureUploader(data : UploadPicture) {
         setIsLoading(false);
     };
 
-    // Alternative method - handle ZIP file upload
-    const handleZipUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-        setMessage("");
-        setUploadedUrls(null);
-
-        if (!e.target.files || e.target.files.length === 0) {
-            return;
-        }
-
-        const file = e.target.files[0];
-        if (!file.name.endsWith('.zip')) {
-            setMessage("Please upload a ZIP file containing entity folders.");
-            return;
-        }
-
-        setIsLoading(true);
-        setMessage("Processing ZIP file...");
-
-        try {
-            // Create form data for the ZIP processing
-            const formData = new FormData();
-            formData.append('zipFile', file);
-
-            // Send to your API endpoint that handles ZIP extraction
-            const response = await fetch('/api/process-zip', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to process ZIP file`);
-            }
-
-            const result = await response.json();
-
-            if (result.groups && Object.keys(result.groups).length > 0) {
-                // Convert the result to our ImageGroup format
-                const newGroups: ImageGroup = {};
-
-                for (const [id, files] of Object.entries(result.groups)) {
-                    if (Array.isArray(files)) {
-                        newGroups[id] = {
-                            files: [], // We don't have actual File objects from the server
-                            previews: (files as string[]), // These would be temporary URLs to the extracted files
-                        };
-                    }
-                }
-
-                setImageGroups(newGroups);
-                setMessage(`Successfully processed ${Object.keys(newGroups).length} entity folders.`);
-            } else {
-                setMessage("No valid entity folders found in the ZIP file.");
-            }
-        } catch (error) {
-            setMessage(`Error processing ZIP: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            console.error("ZIP processing error:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     // Handle manual folder selection - Modified to add images instead of replacing
     const handleentityFolderSelect = (entityName: string, files: FileList | null) => {
         if (!files || files.length === 0) return;
@@ -190,22 +128,22 @@ export default function PictureUploader(data : UploadPicture) {
         console.log(imageGroups)
         setIsLoading(true);
         setMessage("Uploading to Cloudflare R2...");
-    
+
         try {
             // Create an object to store all URLs grouped by ID
             const urlsById: UploadedUrls = {};
-    
+
             // Process each entity group
             for (const entityName of Object.keys(imageGroups)) {
                 urlsById[entityName] = {};
                 const files = imageGroups[entityName].files;
-    
+
                 // If we don't have actual files (from ZIP processing), skip
                 if (files.length === 0 && imageGroups[entityName].previews.length > 0) {
                     // We would handle server-side files differently
                     continue;
                 }
-    
+
                 // Upload each file in the group
                 for (const file of files) {
                     // Create form data for upload
@@ -214,24 +152,24 @@ export default function PictureUploader(data : UploadPicture) {
                     formData.append('entityName', entityName);
                     // Send to your API endpoint that handles R2 upload
                     const response = await uploadImages(formData, data.type, data.file);
-    
+
                     if (!response.success) { // Fixed condition check
                         throw new Error(`Failed to upload ${file.name}`);
                     }
-    
+
                     // Store the URL in our URLs object
                     if (response.urls && response.urls.length > 0) {
                         urlsById[entityName][file.name] = response.urls[0];
                     }
-                    
+
                     console.log(response);
                 }
             }
-    
+
             setUploadedUrls(urlsById);
             setMessage("Upload complete! URLs are available in the console and below.");
             console.log("Uploaded URLs:", urlsById);
-    
+
         } catch (error) {
             setMessage(`Error uploading: ${error instanceof Error ? error.message : 'Unknown error'}`);
             console.error("Upload error:", error);
@@ -353,10 +291,11 @@ export default function PictureUploader(data : UploadPicture) {
                             directory="true"
                             multiple
                             onChange={handleFolderUpload}
-                            className="text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+                            className="hidden"
                             disabled={isLoading}
-
+                            id="uploadFolder"
                         />
+                        <label htmlFor={`uploadFolder`} className="text-white mr-4 py-2 px-4 rounded-lg border-0 text-sm bg-blue-500 text-white hover:bg-blue-600">Choose Folder</label>
                         <p className="text-gray-300 text-sm italic">Select the folder containing all {data.type} folders</p>
                     </div>
                 </div>
