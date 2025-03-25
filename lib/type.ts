@@ -48,6 +48,19 @@ export type champion = {
   picture: string[];
 }
 
+export type pokemon = {
+  id: number,
+  name:string,
+  type1 : string,
+  typ2 : string | null,
+  class : string,
+  height : number,
+  weight : number,
+  abilities : string[],
+  generation : number,
+  pictures : string[];
+}
+
 export type lane = "top" | "jungle" | "mid" | "bot" | "support"
 
 export type UpdateChampPayload = {
@@ -55,6 +68,17 @@ export type UpdateChampPayload = {
   updates: {
     imageChanges: {
       icon?: File;
+      addedPictures: File[];
+      deletedPictures: string[];
+    }
+    // other champion update fields
+  }
+}
+
+export type UpdatePokemonPayload = {
+  pokemonName: string;
+  updates: {
+    imageChanges: {
       addedPictures: File[];
       deletedPictures: string[];
     }
