@@ -147,7 +147,7 @@ export default function UsersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap font-medium flex center">
-                    <Link href={`/users/${user.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">
+                    <Link href={`/admin/users/${user.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">
                       View
                     </Link>
 

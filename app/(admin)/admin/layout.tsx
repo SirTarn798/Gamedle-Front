@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Jersey_10 } from "next/font/google";
-import "../globals.css";
-import NavBarLogin from "../components/NavBarLogin";
+import "../../globals.css";
+import NavBarLogin from "../../components/NavBarLogin";
 
 const jersey = Jersey_10({ subsets: ["latin"], weight: "400" });
 
