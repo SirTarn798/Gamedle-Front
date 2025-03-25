@@ -2,11 +2,11 @@
 
 import R2ClientSingleton from "@/lib/r2";
 import { UpdateChampPayload } from "@/lib/type";
+import { generateFileName } from "@/lib/util";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 export async function updateChampion(payload : UpdateChampPayload) {
     console.log(payload)
-    return;
     const s3Client = R2ClientSingleton.getInstance();
 
     const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME;
@@ -18,7 +18,7 @@ export async function updateChampion(payload : UpdateChampPayload) {
 
     //TARN's NOTE : Fuck .pictures, send .addedPictures and .deletedPictures or .icon to server. Also make this handle Pokemon as well
     if (payload.updates.imageChanges.icon) {
-        const iconKey = `champions/${payload.championId}/icon-${Date.now()}`;
+        const iconKey = `champion/icon/${payload.championName}/${generateFileName(payload.updates.imageChanges.icon?.name || "")}`;
         const iconUploadCommand = new PutObjectCommand({
             Bucket: bucket,
             Key: iconKey,
@@ -27,12 +27,12 @@ export async function updateChampion(payload : UpdateChampPayload) {
         });
 
         await s3Client.send(iconUploadCommand);
-        newImageUrls.push(`https://${bucket}.r2.cloudflarestorage.com/${iconKey}`);
+        newImageUrls.push(`${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${iconKey}`);
     }
 
     // Handle new picture uploads
     for (const picture of payload.updates.imageChanges.addedPictures) {
-        const pictureKey = `champions/${payload.championId}/picture-${Date.now()}-${picture.name}`;
+        const pictureKey = `champion/picture/${payload.championName}/${generateFileName(picture.name)}`;
         const pictureUploadCommand = new PutObjectCommand({
             Bucket: bucket,
             Key: pictureKey,
@@ -41,21 +41,22 @@ export async function updateChampion(payload : UpdateChampPayload) {
         });
 
         await s3Client.send(pictureUploadCommand);
-        newImageUrls.push(`https://${bucket}.r2.cloudflarestorage.com/${pictureKey}`);
+        newImageUrls.push(`${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${pictureKey}`);
     }
 
     // Handle picture deletions
     for (const pictureUrl of payload.updates.imageChanges.deletedPictures) {
         // Extract the key from the URL
         const key = new URL(pictureUrl).pathname.slice(1);
+        console.log(key)
         const deleteCommand = new DeleteObjectCommand({
             Bucket: bucket,
-            Key: key
+            Key: decodeURIComponent(key)
         });
-
+        console.log("Done deleting : ", payload.updates.imageChanges.deletedPictures)
         await s3Client.send(deleteCommand);
     }
-
+    console.log(newImageUrls);
     // Update database with new champion details
     return;
 }

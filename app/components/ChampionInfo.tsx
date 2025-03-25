@@ -136,7 +136,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
   const handleSave = async () => {
     // Prepare the payload for server action
     const payload : UpdateChampPayload = {
-      championId: champ.id,
+      championName: champ.name,
       updates: {
         ...editedChamp,
         imageChanges: {

@@ -51,7 +51,7 @@ export type champion = {
 export type lane = "top" | "jungle" | "mid" | "bot" | "support"
 
 export type UpdateChampPayload = {
-  championId: number;
+  championName: string;
   updates: {
     imageChanges: {
       icon?: File;
