@@ -130,11 +130,14 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
       ...editedChamp,
       pictures: editedChamp.pictures.filter(pic => pic !== pictureToDelete)
     });
-
-    setImageChanges(prev => ({
-      ...prev,
-      deleted: [...prev.deleted, pictureToDelete]
-    }));
+    
+    if (!pictureToDelete.startsWith("data:image")) {
+      console.log("xdd");
+      setImageChanges(prev => ({
+        ...prev,
+        deleted: [...prev.deleted, pictureToDelete]
+      }));
+    }
   };
 
   const handleSave = async () => {
