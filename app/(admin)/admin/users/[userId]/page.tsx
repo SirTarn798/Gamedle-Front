@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import router from 'next/router';
 import React from 'react';
 import { useState, useEffect } from 'react';
@@ -57,6 +58,15 @@ export default function User({ params }: { params: { userId: string } }) {
         return <div>User not found.</div>;
     }
 
+    const handleDelete = (id) => {
+      const response = fetch(`http://localhost/api/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Accept: 'application/json',
+        },
+      })
+    };
+
     return (
       <div className="container mx-auto px-4 py-8">
 
@@ -73,6 +83,31 @@ export default function User({ params }: { params: { userId: string } }) {
               <h3 className="text-2xl leading-6 font-medium text-gray-900">User Information</h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500">Personal details and account information.</p>
             </div>
+            <div className='flex gap-5'>
+            <Link href="/admin/users">
+              <button
+                className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-red-800"
+                onClick={() => handleDelete(user.id)}
+              >
+                Delete
+              </button>
+            </Link>
+            {/* <Link href="">
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-blue-800"
+                onClick={()=>{return}}
+              >
+                Edit
+              </button>
+            </Link> */}
+            <Link href="/admin/users">
+              <button
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-gray-500"
+              >
+                Back
+              </button>
+            </Link>
+          </div>
           </div>
           
           <div className="border-t border-gray-200">

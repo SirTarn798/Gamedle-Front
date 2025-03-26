@@ -12,7 +12,8 @@ interface Champion {
   release_date: string;
   resource_type: string;
   gender: string;
-  icon_path: string;
+  region: string;
+  icon_url: string;
 }
 
 // Define the pagination metadata structure
@@ -84,10 +85,20 @@ export default function ChampionsPage() {
       fetchChampions(page);
     }
   };
+  console.log(champions)
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl mb-6">Champion List</h1>
+      <div className='flex justify-between items-center'>
+        <h1 className="text-4xl mb-6">Champion List</h1>
+        <Link href="/admin">
+          <button
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-gray-500"
+          >
+            Back
+          </button>
+        </Link>
+      </div>
 
       {loading && <div className="text-center py-4">Loading champions...</div>}
 
@@ -128,6 +139,11 @@ export default function ChampionsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
+                      <img
+                        className="h-8 w-8 rounded-full object-cover mr-2"
+                        src={champion.icon_url}
+                        alt={`${champion.name} Icon`}
+                      />
                       <div className="font-medium text-gray-900">{champion.name}</div>
                     </div>
                   </td>
