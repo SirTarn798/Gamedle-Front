@@ -2,7 +2,7 @@ import ChampionInfo from "@/app/components/ChampionInfo";
 import { champion } from "@/lib/type";
 
 const champ: champion = {
-    id : 1,
+  id: 1,
   name: "Aatrox",
   region: "Runeterra",
   class: "Juggernaut",
@@ -13,7 +13,10 @@ const champ: champion = {
   resource_type: "Blood Well",
   release_date: new Date("2013-06-13"),
   icon: "https://ddragon.leagueoflegends.com/cdn/15.6.1/img/champion/Aatrox.png",
-  pictures : ["https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/champion/picture/Aatrox/2025-03-24T17%3A47%3A56.466Z.jpg", "https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/champion/picture/Aatrox/2025-03-24T17%3A47%3A56.882Z.jpg", "https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/champion/picture/Aatrox/2025-03-24T17%3A47%3A57.320Z.jpg"]
+  pictures: [
+    "https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/champion/picture/Aatrox/2025-03-26T09%3A49%3A05.660Z.jpg", 
+    "https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/champion/picture/Aatrox/2025-03-26T09%3A49%3A07.386Z.jpg", 
+    "https://pub-47e4cb4a2e98498e8f51f7d685ba74e0.r2.dev/champion/picture/Aatrox/2025-03-26T09%3A49%3A07.729Z.jpg"]
 };
 
 export default function EditChampion() {

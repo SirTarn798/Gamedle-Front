@@ -111,11 +111,12 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
       ...editedPokemon,
       pictures: editedPokemon.pictures.filter(pic => pic !== pictureToDelete)
     });
-
-    setImageChanges(prev => ({
-      ...prev,
-      deleted: [...prev.deleted, pictureToDelete]
-    }));
+    if (!pictureToDelete.startsWith("data:image")) {
+      setImageChanges(prev => ({
+        ...prev,
+        deleted: [...prev.deleted, pictureToDelete]
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -123,25 +124,25 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
     setIsSaving(true);
     // Reset save status
     setSaveStatus('idle');
-  
+
     const formData = new FormData();
-  
+
     // Add champion name
     formData.append('pokemonName', pokemon.name);
-  
+
     // Add new pictures
     imageChanges.added.forEach(file => {
       formData.append('addedPictures', file);
     });
-  
+
     // Add deleted picture URLs
     imageChanges.deleted.forEach(url => {
       formData.append('deletedPictures', url);
     });
-  
+
     try {
       const result = await updatePokemon(formData);
-  
+
       setIsEditing(false);
       setImageChanges({
         added: [],
@@ -150,20 +151,20 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
       setOriginalImages({
         pictures: pokemon.pictures
       });
-  
+
       // Set success status
       setSaveStatus('success');
-  
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSaveStatus('idle');
       }, 3000);
     } catch (error) {
       console.error("Failed to update champion", error);
-  
+
       // Set error status
       setSaveStatus('error');
-  
+
       // Clear error message after 3 seconds
       setTimeout(() => {
         setSaveStatus('idle');
