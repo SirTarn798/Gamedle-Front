@@ -54,7 +54,7 @@ export default function PokemonsPage() {
   const fetchPokemons = async (page: number = 1) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost/api/champions?page=${page}`);
+      const response = await fetch(`http://localhost/api/pokemons?page=${page}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch pokemons');
@@ -99,7 +99,7 @@ export default function PokemonsPage() {
               Search
             </button>
           </Link>
-          <Link href="">
+          <Link href="/upload/pokemon">
             <button
               className="bg-green-300 hover:bg-green-400 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-green-500"
             >

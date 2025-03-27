@@ -26,7 +26,7 @@ function NavBarClient({ isLoggedIn, onLogout, userName, userRole, userPoint }: {
             <Link href="/">
                 <Image src="/Logo.png" height={120} width={180} alt="Logo" className="m-3"/>
             </Link>
-            <div className="flex gap-10 m-3 text-white items-center text-3xl">
+            <div className="flex gap-10 m-3 text-white items-center text-xl">
                 <div className="flex-col">
                     <div>name : {userName}</div>
                     <div>role {userRole}</div>
