@@ -52,7 +52,7 @@ export type pokemon = {
   id: number,
   name:string,
   type1 : string,
-  typ2 : string | null,
+  type2 : string | null,
   class : string,
   height : number,
   weight : number,
