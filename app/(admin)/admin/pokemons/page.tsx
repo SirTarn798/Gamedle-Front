@@ -91,13 +91,22 @@ export default function PokemonsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className='flex justify-between items-center'>
         <h1 className="text-4xl mb-6">Pokemon List</h1>
-        <Link href="/admin">
-          <button
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-gray-500"
-          >
-            Back
-          </button>
-        </Link>
+        <div className='flex gap-5'>
+          <Link href="">
+            <button
+              className="bg-green-300 hover:bg-green-400 text-green-800 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-green-500"
+            >
+              Create
+            </button>
+          </Link>
+          <Link href="/admin">
+            <button
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-gray-500"
+            >
+              Back
+            </button>
+          </Link>
+        </div>
       </div>
 
       {loading && <div className="text-center py-4">Loading pokemons...</div>}
@@ -151,8 +160,8 @@ export default function PokemonsPage() {
                     {pokemon.title}
                   </td> */}
                   <td className="px-6 py-4 whitespace-nowrap font-medium flex center">
-                    <Link href={`/admin/pokemons/${pokemon.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">
-                      View
+                    <Link href={`/admin/pokemons/${pokemon.id}`} className="text-amber-600 hover:text-amber-900 mr-4">
+                      Edit
                     </Link>
                     {/* You can add more actions here, like edit or delete */}
                   </td>
