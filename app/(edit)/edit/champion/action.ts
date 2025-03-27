@@ -6,10 +6,9 @@ import { generateFileName } from "@/lib/util";
 
 export async function updateChampion(formData: FormData) {
     const s3Client = R2ClientSingleton.getInstance();
-
     const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME;
     const championName = formData.get('championName') as string;
-
+    console.log(formData);
     // Array to store new image URLs
     const newImageUrls: string[] = [];
 
@@ -32,12 +31,12 @@ export async function updateChampion(formData: FormData) {
     // Handle picture deletions
     const deletedPictures = formData.getAll('deletedPictures') as string[];
     for (const pictureUrl of deletedPictures) {
-        // Extract the key from the URL
         const key = new URL(pictureUrl).pathname.slice(1);
         await deleteFromR2(key);
     }
 
-    console.log(newImageUrls);
-    // Update database with new champion details
+    const editedChamp = JSON.parse(formData.get("editedChamp"));
+    console.log(editedChamp);
+
     return;
 }

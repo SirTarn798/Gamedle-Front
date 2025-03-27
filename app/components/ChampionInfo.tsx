@@ -146,7 +146,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
   const handleSave = async () => {
     setIsSaving(true);
     setSaveStatus("idle");
-    if(editedChamp.name === "" || editedChamp.nick_name === "" || editedChamp.class === "" || editedChamp.region || editedChamp.role.length === 0 || editedChamp.resource_type === "") {
+    if(editedChamp.name === "" || editedChamp.nick_name === "" || editedChamp.class === "" || editedChamp.region === "" || editedChamp.role.length === 0 || editedChamp.resource_type === "") {
       toast.error("Please validate each elements in form.");
       setIsSaving(false);
       return;
@@ -154,8 +154,7 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
     const formData = new FormData();
     
     // Add champion name
-    formData.append("originalChampName", champ.name);
-    formData.append("newChampName", editedChamp.name);
+    formData.append("editedChamp", JSON.stringify(editedChamp))
     // Add icon if changed
     if (imageChanges.icon) {
       formData.append("icon", imageChanges.icon);
