@@ -22,7 +22,7 @@ export default function User({ params }: { params: { userId: string } }) {
         const fetchUser = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`http://localhost/api/users/${userId}`, { // Use relative URL and GET
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/users/${userId}`, { // Use relative URL and GET
                     method: 'GET',
                     headers: {
                         Accept: 'application/json', // Corrected Accept header
@@ -59,7 +59,7 @@ export default function User({ params }: { params: { userId: string } }) {
     }
 
     const handleDelete = (id) => {
-      const response = fetch(`http://localhost/api/users/${id}`, {
+      const response = fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/users/${id}`, {
         method: 'DELETE',
         headers: {
           Accept: 'application/json',

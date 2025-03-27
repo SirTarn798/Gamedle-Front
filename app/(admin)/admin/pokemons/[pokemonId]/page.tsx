@@ -37,7 +37,7 @@ export default function PokemonDetails({ params }: { params: { pokemonId: string
     const fetchPokemon = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost/api/champions/${pokemonId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/${pokemonId}`, {
           method: 'GET',
           headers: {
             Accept: 'application/json',
@@ -74,7 +74,7 @@ export default function PokemonDetails({ params }: { params: { pokemonId: string
   }
 
   const handleDelete = (id) => {
-    const response = fetch(`http://localhost/api/champions/${id}`, {
+    const response = fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/${id}`, {
       method: 'DELETE',
       headers: {
         Accept: 'application/json',

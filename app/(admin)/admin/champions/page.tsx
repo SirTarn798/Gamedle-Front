@@ -54,7 +54,7 @@ export default function ChampionsPage() {
   const fetchChampions = async (page: number = 1) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost/api/champions?page=${page}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions?page=${page}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch champions');

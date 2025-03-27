@@ -9,7 +9,6 @@ export default function Upload() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
   const [hasFile, setHasFile] = useState<boolean>(false);
-  const urlPokemonAPI = 'http://localhost/api/pokemons/bulk';
   const columnName = ['name', 'type1', 'type2', 'height', 'weight', 'attack', 'defence', 'speed', 'generation'];
   const [importDataColumns, setImportDataColumns] = useState<string[] | null>(null);
 
@@ -101,7 +100,7 @@ export default function Upload() {
     setMessage("Saving to database...");
 
     try {
-      const response = await fetch(urlPokemonAPI, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/pokemons/bulk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

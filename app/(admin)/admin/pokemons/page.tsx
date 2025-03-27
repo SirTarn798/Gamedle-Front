@@ -54,7 +54,7 @@ export default function PokemonsPage() {
   const fetchPokemons = async (page: number = 1) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost/api/pokemons?page=${page}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/pokemons?page=${page}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch pokemons');
