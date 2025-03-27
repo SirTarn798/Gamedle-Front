@@ -30,8 +30,16 @@ export default function Upload() {
         const sheet = workbook.Sheets[sheetName];
         const parsedData = XLSX.utils.sheet_to_json(sheet);
         
+        if (parsedData.length > 0) {
+          console.log("File Columns:", Object.keys(parsedData[0]));
+          console.log("File Columns:", Object.values(parsedData[0]));
+          console.log("File Columns:", Object.values(parsedData[1]));
+        }
+
         // Process data if needed (e.g., format dates, validate fields)
         const processedData = processData(parsedData);
+        console.log("process data, ", processedData)
+        console.log("process data, ", JSON.stringify(processedData))
         
         setData(processedData);
         setHasFile(true);
@@ -80,10 +88,9 @@ export default function Upload() {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          // If you're using Laravel Sanctum or Passport for authentication
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Assuming you store the token in localStorage
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        credentials: 'include', // Include cookies for Laravel session authentication
+        // credentials: 'include', // Include cookies for Laravel session authentication
         body: JSON.stringify({ data }),
       });
       
