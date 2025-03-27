@@ -35,7 +35,10 @@ export async function updateChampion(formData: FormData) {
         await deleteFromR2(key);
     }
 
-    const editedChamp = JSON.parse(formData.get("editedChamp"));
+    let editedChamp = JSON.parse(formData.get("editedChamp"));
+    editedChamp["deletedPictures"] = deletedPictures;
+    editedChamp["addedPictures"] = newImageUrls;
+    delete editedChamp["pictures"];
     console.log(editedChamp);
 
     return;

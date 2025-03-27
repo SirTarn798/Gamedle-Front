@@ -12,7 +12,7 @@ function Register() {
     const [registrationSuccess, setRegistrationSuccess] = useState('');
     const router = useRouter();
 
-    const urlUsersAPI = "http://localhost/api/users"
+    const urlUsersAPI = `${process.env.NEXT_PUBLIC_API_SERVER_URL}/users`
     const handleSubmit = async (event) => {
         event.preventDefault();
         setRegistrationError('');

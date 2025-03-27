@@ -10,7 +10,7 @@ export async function login(prevState: any, formData: FormData) {
   const userPassword = formData.get('password');
 
   try {
-    const response = await fetch(`${process.env.API_SERVER_URL}/login`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/login`, {
       method: 'POST',
       headers: {
         Accept: 'application.json',
@@ -18,12 +18,10 @@ export async function login(prevState: any, formData: FormData) {
       },
       body: JSON.stringify({ email: userEmail, password: userPassword }),
     });
-
     const data = await response.json();
     const message = data.message;
     const token = data.token;
     const user = data.user;
-  
     if ( response.status != 200) {
       console.log("status code", response.status, "message", message);
       console.log("message = ", message);

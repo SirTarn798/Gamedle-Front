@@ -2,17 +2,22 @@
 
 import LeagueClassicItem from "@/app/components/LeagueClassicItem";
 import { championsData } from "@/lib/exampleData";
+import { useActionState } from "react";
+import { guessChampionClassic } from "../action";
 
 function LeagueClassic() {
+    const [state, guessChamp] = useActionState(guessChampionClassic, undefined);
+  
   return (
     <div className="flex flex-col items-center gap-8 mt-12 mb-24 w-full max-w-5xl">
       <h1 className="text-white text-5xl tracking-wider pixelBorder bg-mainTheme cursor-default">
         Guess The Champion
       </h1>
-      <form action="" className="w-full relative mb-8">
+      <form action={guessChamp} className="w-full relative mb-8">
         <input
           type="text"
           className="w-full p-3 bg-mainTheme border-4 border-white text-2xl text-white"
+          name="champName"
         />
         <button
           type="submit"
