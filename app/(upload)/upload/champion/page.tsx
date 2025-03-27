@@ -1,5 +1,6 @@
 'use client'
 
+import Link from "next/link";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 
@@ -8,39 +9,41 @@ export default function Upload() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
   const [hasFile, setHasFile] = useState<boolean>(false);
-  
-  // Function to handle file upload and parsing
+  const urlChampionAPI = 'http://localhost/api/champions/bulk';
+  const columnName = ['name', 'title', 'release_date', 'class', 'range_type', 'resource_type', 'gender', 'role'];
+  const [importDataColumns, setImportDataColumns] = useState<string[] | null>(null);
+
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) {
       setHasFile(false);
       setData([]);
+      setImportDataColumns(null);
       return;
     }
-    
+
     setIsLoading(true);
     setMessage("");
-    
+
     const reader = new FileReader();
     reader.readAsBinaryString(e.target.files[0]);
     reader.onload = (e) => {
       try {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: "binary" });
+        const fileData = e.target?.result;
+        const workbook = XLSX.read(fileData, { type: "binary" });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const parsedData = XLSX.utils.sheet_to_json(sheet);
-        
+
         if (parsedData.length > 0) {
-          console.log("File Columns:", Object.keys(parsedData[0]));
-          console.log("File Columns:", Object.values(parsedData[0]));
-          console.log("File Columns:", Object.values(parsedData[1]));
+          setImportDataColumns(Object.keys(parsedData[0]));
+        } else {
+          setImportDataColumns(null);
         }
 
         // Process data if needed (e.g., format dates, validate fields)
         const processedData = processData(parsedData);
-        console.log("process data, ", processedData)
-        console.log("process data, ", JSON.stringify(processedData))
-        
+        console.log("process data, ", processedData);
         setData(processedData);
         setHasFile(true);
         setIsLoading(false);
@@ -49,60 +52,75 @@ export default function Upload() {
         setMessage("Error parsing file. Please check the format.");
         setHasFile(false);
         setIsLoading(false);
+        setImportDataColumns(null);
       }
     };
-    
+
     reader.onerror = () => {
       setMessage("Error reading file");
       setHasFile(false);
       setIsLoading(false);
+      setImportDataColumns(null);
     };
   };
+  const dateColumns = ["release_date"]; // Add all your date column headers here
+  const columnsToCheck = ['release_date', 'class', 'range_type', 'resource_type', 'gender', 'role'];
 
-  // Process data before saving (optional)
   const processData = (rawData: any[]) => {
-    // Example processing: add a timestamp, format data, etc.
-    return rawData.map(item => ({
-      ...item,
-      processedAt: new Date().toISOString(),
-      // Add any other processing you need
-    }));
+    return rawData.map(item => {
+      const newItem: { [key: string]: any } = {};
+      for (const key in item) {
+        if (Object.prototype.hasOwnProperty.call(item, key)) {
+          const value = item[key];
+
+          if (dateColumns.includes(key) && typeof value === 'number' && value > 0 && value < 2958465) {
+            // Apply the conversion formula to get a Date object
+            const jsDate = new Date(Math.round((value - 25569) * 86400 * 1000));
+
+            // Format the Date object to "YYYY-MM-DD" string
+            const year = jsDate.getFullYear();
+            const month = (jsDate.getMonth() + 1).toString().padStart(2, '0');
+            const day = jsDate.getDate().toString().padStart(2, '0');
+            newItem[key] = `${year}-${month}-${day}`;
+          } else {
+            newItem[key] = value;
+          }
+        }
+      }
+      return newItem;
+    });
   };
-  
-  // Save data to Laravel backend
+
   const saveToDatabase = async () => {
     if (data.length === 0) {
       setMessage("No data to save");
       return;
     }
-    
+
     setIsLoading(true);
     setMessage("Saving to database...");
-    
+
     try {
-      // URL to your Laravel API endpoint
-      const laravelApiUrl = 'https://your-laravel-backend.com/api/save-data';
-      
-      const response = await fetch(laravelApiUrl, {
+      const response = await fetch(urlChampionAPI, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        // credentials: 'include', // Include cookies for Laravel session authentication
-        body: JSON.stringify({ data }),
+        body: JSON.stringify({
+          'data': data
+        }),
       });
-      
+
       const result = await response.json();
-      
+
       if (response.ok) {
         setMessage(`Successfully saved ${data.length} records to database`);
       } else {
-        setMessage(`Error: ${result.message || result.error || 'Failed to save data'}`);
+        setMessage(`Error: columns name must be [name, title, release_date, class, range_type, resource_type,	gender,	region]`);
       }
     } catch (error) {
-    //   console.error("Error saving to database:", error);
       setMessage("Error connecting to database. Please try again.");
     } finally {
       setIsLoading(false);
@@ -112,20 +130,20 @@ export default function Upload() {
   return (
     <div className="relative z-10 w-full flex flex-col items-center">
       <div className="w-full max-w-4xl p-6 bg-white/10 backdrop-blur-md rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold mb-6 text-white">Upload Excel File</h1>
-        
+        <h1 className="text-2xl mb-6 text-white">Upload Excel File</h1>
+
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <input 
-              type="file" 
-              accept=".xlsx, .xls" 
-              onChange={handleFileUpload} 
-              className="text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+            <input
+              type="file"
+              accept=".xlsx, .xls"
+              onChange={handleFileUpload}
+              className="text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-blue-500 file:text-white hover:file:bg-blue-600"
               disabled={isLoading}
             />
-            
-            <button 
-              onClick={saveToDatabase} 
+
+            <button
+              onClick={saveToDatabase}
               className={`px-4 py-2 rounded-lg transition-all ${
                 hasFile && !isLoading
                   ? 'bg-green-600 hover:bg-green-700 text-white cursor-pointer'
@@ -135,36 +153,43 @@ export default function Upload() {
             >
               {isLoading ? 'Processing...' : 'Save to Database'}
             </button>
+            <Link href="/admin/champions">
+              <button
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-gray-500"
+              >
+                Back
+              </button>
+            </Link>
           </div>
-          
+
           {!hasFile && data.length === 0 && !isLoading && (
-            <p className="mt-2 text-yellow-300 text-sm">
+            <p className="mt-2 text-xl bg-red-500/20 text-red-200 mb-4 p-3 rounded">
               Upload a file
             </p>
           )}
         </div>
-        
+
         {message && (
           <div className={`mb-4 p-3 rounded ${message.includes('Error') ? 'bg-red-500/20 text-red-200' : 'bg-green-500/20 text-green-200'}`}>
             {message}
           </div>
         )}
 
-        {data.length > 0 && (
+        {data.length > 0 && importDataColumns && (
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">Data Preview</h2>
+              <h2 className="text-xl text-white">Data Preview</h2>
               <div className="text-white text-sm">
                 {data.length} records found
               </div>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="w-full border-collapse bg-white/5 rounded-lg overflow-hidden">
                 <thead className="bg-black/30">
                   <tr>
-                    {Object.keys(data[0]).map((key) => (
-                      <th key={key} className="p-3 text-left text-white">{key}</th>
+                    {importDataColumns.map((key) => (
+                      <th key={key} className="p-3 font-normal text-left text-white">{key}</th>
                     ))}
                   </tr>
                 </thead>
