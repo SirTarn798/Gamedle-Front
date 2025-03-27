@@ -1,4 +1,4 @@
-import { LeagueClassicInput, LeagueSearch } from "./type";
+import { LeagueClassicInput, LeagueSearch, pokemon } from "./type";
 
 export const championsData: LeagueClassicInput[] = [
   {
@@ -107,4 +107,37 @@ export const searchChampionData: LeagueSearch[] = [
     title: "I'm not European."
   }
 
+]
+
+export const pokemonData : pokemon[] = [
+  { image: "string",
+    id: 12,
+    name:"string",
+    type1 : "string",
+    type2 : "string",
+    class : "string",
+    height : 12,
+    weight : 12,
+    attack : 1,
+    speed : 2,
+    defense : 3,
+    abilities : ["string[]"],
+    generation : 1,
+    pictures : ["string[]"],
+  },
+  { image: "string",
+    id: 12,
+    name:"string",
+    type1 : "string",
+    type2 : "string",
+    class : "string",
+    height : 12,
+    weight : 12,
+    attack : 1,
+    speed : 2,
+    defense : 3,
+    abilities : ["string[]"],
+    generation : 1,
+    pictures : ["string[]"],
+  },
 ]

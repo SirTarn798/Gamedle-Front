@@ -49,6 +49,7 @@ export type champion = {
 }
 
 export type pokemon = {
+  image: string,
   id: number,
   name:string,
   type1 : string,
