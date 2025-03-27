@@ -152,7 +152,7 @@ export default function Upload() {
             >
               {isLoading ? 'Processing...' : 'Save to Database'}
             </button>
-            <Link href="/admin/champions">
+            <Link href="/admin/pokemons">
               <button
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-gray-500"
               >
