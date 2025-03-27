@@ -1,7 +1,8 @@
 "use client";
 
 import LeagueClassicItem from "@/app/components/LeagueClassicItem";
-import { championsData } from "@/lib/exampleData";
+import PokemonClassicItem from "@/app/components/PokemonClassicItem";
+import { championsData, pokemonData } from "@/lib/exampleData";
 
 export default function PokemonClassic() {
   return (
@@ -25,17 +26,17 @@ export default function PokemonClassic() {
       </form>
 
       <div className="w-full grid grid-cols-7 gap-4 text-white font-bold text-shadow-xl cursor-default">
-        <div className="text-xl p-2 border-b-2 text-center tooltip">Pokémon<span className="tooltiptext">pokemon</span></div>
-        <div className="text-xl p-2 border-b-2 text-center tooltip">Type1<span className="tooltiptext">Type1</span></div>
-        <div className="text-xl p-2 border-b-2 text-center tooltip">Type2<span className="tooltiptext">Type2</span></div>
-        <div className="text-xl p-2 border-b-2 text-center tooltip">Generation<span className="tooltiptext">Generation</span></div>
-        <div className="text-xl p-2 border-b-2 text-center tooltip">Attack<span className="tooltiptext">Attack</span></div>
-        <div className="text-xl p-2 border-b-2 text-center tooltip">Speed<span className="tooltiptext">Speed</span></div>
-        <div className="text-xl p-2 border-b-2 text-center tooltip">Defense<span className="tooltiptext">Defense</span></div>
+        <div className="text-xl p-2 border-b-2 text-center tooltip">Pokémon</div>
+        <div className="text-xl p-2 border-b-2 text-center tooltip">Type1<span className="tooltiptext">Primary elemental attribute</span></div>
+        <div className="text-xl p-2 border-b-2 text-center tooltip">Type2<span className="tooltiptext">Secondary elemental attribute</span></div>
+        <div className="text-xl p-2 border-b-2 text-center tooltip">Generation</div>
+        <div className="text-xl p-2 border-b-2 text-center tooltip">Attack</div>
+        <div className="text-xl p-2 border-b-2 text-center tooltip">Speed</div>
+        <div className="text-xl p-2 border-b-2 text-center tooltip">Defense</div>
       </div>
 
-      {championsData.map((champion, index) => (
-        <LeagueClassicItem key={index} {...champion} />
+      {pokemonData.map((pokemon, index) => (
+        <PokemonClassicItem key={index} {...pokemon} />
       ))}
     </div>
   );
