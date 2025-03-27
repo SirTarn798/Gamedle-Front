@@ -37,7 +37,7 @@ export default function ChampionDetails({ params }: { params: { championId: stri
     const fetchChampion = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost/api/champions/${championId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/${championId}`, {
           method: 'GET',
           headers: {
             Accept: 'application/json',
@@ -74,7 +74,7 @@ export default function ChampionDetails({ params }: { params: { championId: stri
   }
 
   const handleDelete = (id) => {
-    const response = fetch(`http://localhost/api/champions/${id}`, {
+    const response = fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/${id}`, {
       method: 'DELETE',
       headers: {
         Accept: 'application/json',

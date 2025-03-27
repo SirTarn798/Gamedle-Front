@@ -53,7 +53,7 @@ export async function logout() {
   const cookie = (await cookies()).get("session")?.value;
   const session = await decrypt(cookie);
   try {
-    const response = await fetch('http://localhost/api/revoke', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/revoke`, {
       method: 'DELETE',
       headers: {
         Accept: 'application.json',

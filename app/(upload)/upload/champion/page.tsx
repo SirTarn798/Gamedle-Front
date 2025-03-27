@@ -9,7 +9,6 @@ export default function Upload() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
   const [hasFile, setHasFile] = useState<boolean>(false);
-  const urlChampionAPI = 'http://localhost/api/champions/bulk';
   const columnName = ['name', 'title', 'release_date', 'class', 'range_type', 'resource_type', 'gender', 'role'];
   const [importDataColumns, setImportDataColumns] = useState<string[] | null>(null);
 
@@ -101,7 +100,7 @@ export default function Upload() {
     setMessage("Saving to database...");
 
     try {
-      const response = await fetch(urlChampionAPI, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/bulk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

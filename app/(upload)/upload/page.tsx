@@ -83,7 +83,7 @@ export default function Upload() {
       // URL to your Laravel API endpoint
       const laravelApiUrl = 'https://your-laravel-backend.com/api/save-data';
       
-      const response = await fetch(laravelApiUrl, {
+      const response = await fetch(`laravelApiUrl`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
