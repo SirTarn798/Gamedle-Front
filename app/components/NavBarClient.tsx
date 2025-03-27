@@ -11,9 +11,6 @@ function NavBarClient({ isLoggedIn, onLogout, userName, userRole, userPoint }: {
                     <Image src="/Logo.png" height={120} width={180} alt="Logo" className="m-3"/>
                 </Link>
                 <div className="flex gap-10 m-3 text-white items-center text-3xl">
-                    <Link href="/upload">
-                        <button className="p-2 pixelBorder">UPLOAD</button>
-                    </Link>
                     <Link href="/login">
                         <button className="">SIGN IN</button>
                     </Link>
@@ -30,7 +27,6 @@ function NavBarClient({ isLoggedIn, onLogout, userName, userRole, userPoint }: {
                 <Image src="/Logo.png" height={120} width={180} alt="Logo" className="m-3"/>
             </Link>
             <div className="flex gap-10 m-3 text-white items-center text-3xl">
-                <img></img>
                 <div className="flex-col">
                     <div>name : {userName}</div>
                     <div>role {userRole}</div>

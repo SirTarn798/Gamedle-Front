@@ -92,11 +92,32 @@ export default function ChampionsPage() {
       <div className='flex justify-between items-center'>
         <h1 className="text-4xl mb-6">Champion List</h1>
         <div className='flex gap-5'>
-          <Link href="">
+          <Link href="/search/champions">
             <button
-              className="bg-green-300 hover:bg-green-400 text-green-800 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-green-500"
+              className="bg-blue-300 hover:bg-blue-400 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-blue-500"
             >
-              Create
+              Search
+            </button>
+          </Link>
+          <Link href="/upload/champion">
+            <button
+              className="bg-green-300 hover:bg-green-400 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-green-500"
+            >
+              Upload File
+            </button>
+          </Link>
+          <Link href="/upload/champion/picture">
+            <button
+              className="bg-green-300 hover:bg-green-400 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-green-500"
+            >
+              Upload Image
+            </button>
+          </Link>
+          <Link href="/upload/champion/icon">
+            <button
+              className="bg-green-300 hover:bg-green-400 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-green-500"
+            >
+              Upload Icon
             </button>
           </Link>
           <Link href="/admin">

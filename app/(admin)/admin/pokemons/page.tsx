@@ -92,11 +92,25 @@ export default function PokemonsPage() {
       <div className='flex justify-between items-center'>
         <h1 className="text-4xl mb-6">Pokemon List</h1>
         <div className='flex gap-5'>
+          <Link href="/search/pokemons">
+            <button
+              className="bg-blue-300 hover:bg-blue-400 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-blue-500"
+            >
+              Search
+            </button>
+          </Link>
           <Link href="">
             <button
-              className="bg-green-300 hover:bg-green-400 text-green-800 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-green-500"
+              className="bg-green-300 hover:bg-green-400 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-green-500"
             >
-              Create
+              Upload File
+            </button>
+          </Link>
+          <Link href="">
+            <button
+              className="bg-green-300 hover:bg-green-400 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-green-500"
+            >
+              Upload Image
             </button>
           </Link>
           <Link href="/admin">
