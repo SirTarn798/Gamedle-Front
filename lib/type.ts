@@ -49,6 +49,7 @@ export type champion = {
 }
 
 export type pokemon = {
+  image: string,
   id: number,
   name:string,
   type1 : string,
@@ -56,6 +57,9 @@ export type pokemon = {
   class : string,
   height : number,
   weight : number,
+  attack : number,
+  speed : number,
+  defense : number,
   abilities : string[],
   generation : number,
   pictures : string[];
