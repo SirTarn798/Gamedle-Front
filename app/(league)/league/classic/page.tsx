@@ -4,8 +4,32 @@ import { useState } from "react";
 import LeagueClassicItem from "@/app/components/LeagueClassicItem";
 import { championsData } from "@/lib/exampleData";
 import { guessChampionClassic } from "../action";
+import { useState, useEffect, useRef } from "react";
+
+interface Champion {
+  id: number;
+  name: string;
+  title: string;
+  release_date: string;
+  class: string;
+  range_type: string;
+  resource_type: string;
+  gender: string;
+  region: string;
+  created_at: string;
+  updated_at: string;
+  icon_url: string;
+  roles: string[];
+}
+
+interface AutocompleteItem {
+  value: string;
+  label: string;
+  image: string;
+}
 
 function LeagueClassic() {
+
   const [state, setState] = useState<any>(undefined);  // store the data received from server
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -26,12 +50,35 @@ function LeagueClassic() {
       <h1 className="text-white text-5xl tracking-wider pixelBorder bg-mainTheme cursor-default">
         Guess The Champion
       </h1>
+
       <form onSubmit={handleFormSubmit} className="w-full relative mb-8">
+
         <input
+          ref={inputRef}
           type="text"
           className="w-full p-3 bg-mainTheme border-4 border-white text-2xl text-white"
           name="champName"
+          value={inputValue}
+          onChange={handleChange}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
         />
+        <div ref={autocompleteRef} className={`absolute bg-mainTheme border-4 border-white w-full z-[10] ${!isInputFocused ? 'hidden' : ''}`}>
+          {suggestions.length > 0 && (
+            <ul className="autocomplete-list">
+              {suggestions.map((item) => (
+                <li
+                  key={item.value}
+                  onClick={() => handleSelect(item)}
+                  className="autocomplete-item flex items-center gap-2 cursor-pointer p-2 hover:bg-white/10"
+                >
+                  <img src={item.image} alt={item.label} className="autocomplete-image h-8 w-8 rounded-full" />
+                  <span className="text-white">{item.label}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <button
           type="submit"
           className="absolute right-3 top-1/2 -translate-y-1/2"
@@ -51,6 +98,7 @@ function LeagueClassic() {
         <div className="text-xl p-2 border-b-2 text-center">Gender</div>
       </div>
 
+
       {state && state.map((champion: any, index: number) => (
         <LeagueClassicItem key={index} {...champion} />
       ))}
@@ -59,6 +107,7 @@ function LeagueClassic() {
       {!state && championsData.map((champion, index) => (
         <LeagueClassicItem key={index} {...champion} />
       ))}
+
     </div>
   );
 }
