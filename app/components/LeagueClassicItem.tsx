@@ -1,7 +1,5 @@
 import { LeagueClassicInput } from "@/lib/type";
 
-export default LeagueClassicItem;
-
 const getStatusColor = (status: boolean) => {
   return status ? "bg-green-400" : "bg-orange-400";
 };
@@ -34,9 +32,7 @@ function LeagueClassicItem(props: LeagueClassicInput) {
         {props.range.range}
       </div>
       <div
-        className={`p-2 text-center rounded ${getStatusColor(
-          props.resource.status
-        )}`}
+        className={`p-2 text-center rounded ${getStatusColor(props.resource.status)}`}
       >
         {props.resource.resource}
       </div>
@@ -48,3 +44,5 @@ function LeagueClassicItem(props: LeagueClassicInput) {
     </div>
   );
 }
+
+export default LeagueClassicItem;
