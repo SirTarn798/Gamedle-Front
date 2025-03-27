@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Pixelify_Sans } from "next/font/google";
 import { Jersey_10 } from "next/font/google";
-import "../../globals.css";
+import "../../../globals.css";
 import NavBarLogin from "@/app/components/NavBarLogin";
+import { ToastContainer } from "react-toastify";
 
 const jersey = Jersey_10({ subsets: ["latin"], weight: "400" });
 const pixelify = Pixelify_Sans({ subsets: ["latin"]});
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body
         className={`${jersey.className} overflow-x-hidden bg-mainTheme bg-[url(/PokemonBG5.jpg)] bg-cover bg-fixed `}
       >
+        <ToastContainer/>
         <NavBarLogin />
         <div className={`${pixelify.className} w-full flex flex-col items-center`}>{children}</div>
       </body>

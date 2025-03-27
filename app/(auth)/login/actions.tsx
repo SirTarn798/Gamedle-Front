@@ -10,7 +10,7 @@ export async function login(prevState: any, formData: FormData) {
   const userPassword = formData.get('password');
 
   try {
-    const response = await fetch('http://localhost/api/login', {
+    const response = await fetch(`${process.env.API_SERVER_URL}/login`, {
       method: 'POST',
       headers: {
         Accept: 'application.json',

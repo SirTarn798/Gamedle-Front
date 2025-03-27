@@ -197,23 +197,10 @@ export default function RuneterraReflexCanvas() {
     );
     setRoom(null);
     setGameState("menu");
-    // redirect("/league/game") : does not reload
-    // router.reload() : Error, invalid hook call
-    // window.location.reload() : Spits tens of toast notification & lag & doesn't not fully refresh
+    
   });
 
-  // socket.on("playerHit", (data) => {
-  //   console.log(room);
-  //   if (playerInformation) {
-  //     setPlayerInformation((prev) => ({
-  //       ...prev,
-  //       [data.socketId]: {
-  //         ...(prev?.[data.socketId] || {}), // Ensure it exists before spreading
-  //         health: room?.players[data.socketId].health, // Default health to 0 if undefined
-  //       },
-  //     }));
-  //   }
-  // });
+  
   useEffect(() => {
     let timer: any;
 
@@ -288,8 +275,6 @@ export default function RuneterraReflexCanvas() {
         }
 
         // Check if player is invulnerable and should be visible in the blink cycle
-        // This creates a blinking effect by making the player visible/invisible every few frames
-        // Math.floor(Date.now() / 100) % 2 === 0 toggles between true/false every 100ms
         const isVisible =
           !player.invulnerable || Math.floor(Date.now() / 100) % 2 === 0;
 
@@ -343,7 +328,7 @@ export default function RuneterraReflexCanvas() {
         }
       });
 
-      // Draw arrows (unchanged)
+      // Draw arrows
       if (projectiles) {
         Object.entries(projectiles).forEach(([id, projectile]) => {
           ctx.save();
@@ -367,11 +352,11 @@ export default function RuneterraReflexCanvas() {
           ctx.restore();
         });
       }
-
+      //Show hit box if enable
       const showHitboxes = false;
 
       if (showHitboxes) {
-        // Draw hitboxes (unchanged)
+        // Draw hitboxes
         Object.entries(players).forEach(([id, player]) => {
           const playerRadius = playerSize / 2;
           ctx.beginPath();

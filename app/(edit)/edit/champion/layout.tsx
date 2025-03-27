@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Jersey_10 } from "next/font/google";
 import "../../../globals.css";
 import NavBarLogin from "@/app/components/NavBarLogin";
+import { ToastContainer } from "react-toastify";
 
 const jersey = Jersey_10({ subsets: ["latin"], weight: "400" });
 
@@ -19,6 +20,8 @@ export default function RootLayout({
       <body
         className={`${jersey.className} overflow-x-hidden bg-mainTheme bg-[url(/ArcadeBG.png)] bg-cover bg-center bg-fixed`}
       >
+        <ToastContainer />
+
         <NavBarLogin />
         <div className="w-full flex flex-col items-center">{children}</div>
       </body>
