@@ -3,18 +3,24 @@
 import LeagueClassicItem from "@/app/components/LeagueClassicItem";
 import PokemonClassicItem from "@/app/components/PokemonClassicItem";
 import { championsData, pokemonData } from "@/lib/exampleData";
+import { useActionState } from "react";
+import { guessPokemonClassic } from "../action";
 
 export default function PokemonClassic() {
+
+  const [state, guessPokemon] = useActionState(guessPokemonClassic, undefined);
+  
   return (
     <div className="flex flex-col items-center gap-8 mt-12 mb-24 w-full max-w-5xl">
       <h1 className="gameBorder1 text-5xl tracking-wider cursor-default text:center">
         Who's that Pokémon?
       </h1>
-      <form action="" className="relative mb-8">
+      <form action={guessPokemon} className="relative mb-8">
         <div className=" gameBorder2 flex flex-row flex-nowrap gap-[30px] px-[30px] py-[15px]">
           <input
             type="text"
             className="w-75% focus:outline-none focus:ring-0 border-none bg-transparent text-2xl text-white"
+            name="pokemonName"
           />
           <button
             type="submit"

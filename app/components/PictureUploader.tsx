@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { saveToDatabase, uploadImages } from "../(upload)/upload/action";
 import { UploadPicture, UploadedUrls } from "@/lib/type";
 import { capitalizeFirstLetter } from "@/lib/util";
@@ -24,6 +24,30 @@ export default function PictureUploader(data: UploadPicture) {
   const saveButtonRef = useRef<HTMLButtonElement>(null);
   const topPageRef = useRef<HTMLDivElement>(null);
   const [folderUploadKey, setFolderUploadKey] = useState(0);
+  const [allPokemons, setAllPokemons] = useState();
+  const [allChampions, setAllChampions] = useState();
+
+  useEffect(() => {
+    const fetchValue = async () => {
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/${data.type}s/get_all`);
+        if (!response.ok) throw new Error("Failed to fetch");
+        const data2 = await response.json();
+        console.log(data2)
+        if (data.type === "champion") {
+          setAllChampions(data2);
+        } else {
+          setAllPokemons(data2);
+        }
+      } catch (err) {
+        console.log(err)
+      }
+    };
+
+    fetchValue();
+  }, []);
+
   // Process when users select folders directly
   const handleFolderUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     setFolderUploadKey((prev) => prev + 1);
@@ -149,6 +173,17 @@ export default function PictureUploader(data: UploadPicture) {
       setMessage("No images to upload");
       return;
     }
+    const missingNames =
+      data.type === "champion"
+        ? Object.keys(imageGroups).filter(nameA => !allChampions.some(champ => champ.name === nameA))
+        : data.type === "pokemon"
+          ? Object.keys(imageGroups).filter(nameA => !allPokemons.some(pokemon => pokemon.name === nameA))
+          : [];
+
+    if (missingNames.length > 0) {
+      toast.error(`Wrong name: ${missingNames.join(", ")}`);
+      return;
+    }
     console.log(imageGroups);
     setIsLoading(true);
     setMessage("Uploading to Cloudflare R2...");
@@ -198,8 +233,7 @@ export default function PictureUploader(data: UploadPicture) {
       console.log("Uploaded URLs:", urlsById);
     } catch (error) {
       setMessage(
-        `Error uploading: ${
-          error instanceof Error ? error.message : "Unknown error"
+        `Error uploading: ${error instanceof Error ? error.message : "Unknown error"
         }`
       );
       console.error("Upload error:", error);
@@ -335,8 +369,8 @@ export default function PictureUploader(data: UploadPicture) {
                   data.file === "icon"
                     ? "https://github.com/SirTarn798/LOLChampIconDataset"
                     : data.type === "champion"
-                    ? "https://github.com/SirTarn798/LOLChampPicDataset"
-                    : "https://www.kaggle.com/datasets/hlrhegemony/pokemon-image-dataset"
+                      ? "https://github.com/SirTarn798/LOLChampPicDataset"
+                      : "https://www.kaggle.com/datasets/hlrhegemony/pokemon-image-dataset"
                 }
                 className="text-blue-400"
               >
@@ -349,9 +383,8 @@ export default function PictureUploader(data: UploadPicture) {
       <div className="w-full max-w-4xl p-6 bg-white/10 backdrop-blur-md rounded-lg shadow-lg">
         <div className="flex gap-2 items-center">
           <h1
-            className={`${
-              data.type === "pokemon" ? "text-mainTheme" : "text-gray-300"
-            } text-2xl my-6`}
+            className={`${data.type === "pokemon" ? "text-mainTheme" : "text-gray-300"
+              } text-2xl my-6`}
           >
             {capitalizeFirstLetter(data.type)}{" "}
             {capitalizeFirstLetter(data.file)}s Upload
@@ -406,9 +439,8 @@ export default function PictureUploader(data: UploadPicture) {
               Choose Folder
             </label>
             <p
-              className={`${
-                data.type === "pokemon" ? "text-mainTheme" : "text-gray-300"
-              } text-sm italic`}
+              className={`${data.type === "pokemon" ? "text-mainTheme" : "text-gray-300"
+                } text-sm italic`}
             >
               Select the folder containing all {data.type} folders
             </p>
@@ -464,12 +496,11 @@ export default function PictureUploader(data: UploadPicture) {
               />
               <label
                 htmlFor={`file-input-${entityId}`}
-                className={`text-white mr-2 py-1 px-3 rounded-md border-0 text-sm bg-blue-600 text-white hover:bg-blue-700 ${
-                  data.file === "icon" &&
+                className={`text-white mr-2 py-1 px-3 rounded-md border-0 text-sm bg-blue-600 text-white hover:bg-blue-700 ${data.file === "icon" &&
                   imageGroups[entityId].files.length === 1
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
-                }`}
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+                  }`}
               >
                 Add Files
               </label>
@@ -518,11 +549,10 @@ export default function PictureUploader(data: UploadPicture) {
           <button
             ref={saveButtonRef}
             onClick={uploadToR2}
-            className={`px-4 py-2 rounded-lg transition-all ${
-              Object.keys(imageGroups).length > 0 && !isLoading
-                ? "bg-green-600 hover:bg-green-700 text-white cursor-pointer"
-                : "bg-gray-600 text-gray-300 cursor-not-allowed opacity-50"
-            }`}
+            className={`px-4 py-2 rounded-lg transition-all ${Object.keys(imageGroups).length > 0 && !isLoading
+              ? "bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+              : "bg-gray-600 text-gray-300 cursor-not-allowed opacity-50"
+              }`}
             disabled={Object.keys(imageGroups).length === 0 || isLoading}
           >
             {isLoading ? "Processing..." : "Save to Database"}
@@ -542,13 +572,12 @@ export default function PictureUploader(data: UploadPicture) {
         {/* Status message */}
         {message && (
           <p
-            className={`mt-3 text-sm ${
-              message.includes("Error")
-                ? "text-red-300"
-                : message.includes("No ") || message.includes("Please")
+            className={`mt-3 text-sm ${message.includes("Error")
+              ? "text-red-300"
+              : message.includes("No ") || message.includes("Please")
                 ? "text-yellow-900"
                 : "text-green-900"
-            }`}
+              }`}
           >
             {message}
           </p>

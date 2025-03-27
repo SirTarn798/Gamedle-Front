@@ -106,12 +106,13 @@ export async function saveToDatabase(
     ])
   );
   let formattedUrls;
-  if (file === "icon") { 
-    formattedUrls = Object.fromEntries(Object.entries(formatted).map(([key, value]) => [key, value[0]])); 
+  if (file === "icon") {
+    formattedUrls = Object.fromEntries(
+      Object.entries(formatted).map(([key, value]) => [`"${key}"`, `'${value[0]}'`])
+    );
   } else {
     formattedUrls = formatted;
   }
-  console.log(formattedUrls)
   const response = await fetch(link, {
     method: file === "icon" ? "PATCH" : "POST",
     headers: {
@@ -119,7 +120,9 @@ export async function saveToDatabase(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${session?.token}`,
     },
-    body: JSON.stringify(formattedUrls)
+    body: JSON.stringify({
+      formattedUrls
+    })
   });
 
   console.log(response);
