@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, ChangeEvent } from "react";
-import { uploadImages } from "../(upload)/upload/action";
-import { UploadPicture } from "@/lib/type";
+import { saveToDatabase, uploadImages } from "../(upload)/upload/action";
+import { UploadPicture, UploadedUrls } from "@/lib/type";
 import { capitalizeFirstLetter } from "@/lib/util";
 import { toast } from "react-toastify";
 
@@ -13,11 +13,6 @@ interface ImageGroup {
   };
 }
 
-interface UploadedUrls {
-  [id: string]: {
-    [filename: string]: string;
-  };
-}
 
 export default function PictureUploader(data: UploadPicture) {
   const [imageGroups, setImageGroups] = useState<ImageGroup>({});
@@ -164,7 +159,7 @@ export default function PictureUploader(data: UploadPicture) {
 
       // Process each entity group
       for (const entityName of Object.keys(imageGroups)) {
-        urlsById[entityName] = {};
+        urlsById[entityName] = [];
         const files = imageGroups[entityName].files;
 
         // If we don't have actual files (from ZIP processing), skip
@@ -189,14 +184,14 @@ export default function PictureUploader(data: UploadPicture) {
 
           // Store the URL in our URLs object
           if (response.urls && response.urls.length > 0) {
-            urlsById[entityName][file.name] = response.urls[0];
+            urlsById[entityName].push(response.urls[0]);
           }
 
           console.log(response);
         }
       }
-
       setUploadedUrls(urlsById);
+      await saveToDatabase(urlsById, data.type, data.file);
       setMessage(
         "Upload complete! URLs are available in the console and below."
       );
@@ -213,7 +208,7 @@ export default function PictureUploader(data: UploadPicture) {
     }
   };
 
-  // Clean up object URLs to prevent memory leaks
+  // Clean up object URLs
   const resetUpload = () => {
     // Revoke all object URLs
     Object.values(imageGroups).forEach((group) => {
@@ -479,8 +474,6 @@ export default function PictureUploader(data: UploadPicture) {
                 Add Files
               </label>
 
-              {/* Preview thumbnails */}
-              {/* Preview thumbnails */}
               {imageGroups[entityId].previews.length > 0 && (
                 <div className="grid grid-cols-4 gap-2 mt-2">
                   {imageGroups[entityId].previews.map((preview, idx) => (
@@ -488,7 +481,6 @@ export default function PictureUploader(data: UploadPicture) {
                       key={idx}
                       className="relative h-16 bg-gray-900 rounded overflow-hidden group"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={preview}
                         alt={`${entityId} preview ${idx + 1}`}

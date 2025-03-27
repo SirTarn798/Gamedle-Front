@@ -85,3 +85,5 @@ export type UpdatePokemonPayload = {
     // other champion update fields
   }
 }
+
+export type UploadedUrls = Record<string, string[]>
