@@ -118,7 +118,7 @@ export default function Upload() {
       if (response.ok) {
         setMessage(`Successfully saved ${data.length} records to database`);
       } else {
-        setMessage(`Error: columns name must be [name, title, release_date, class, range_type, resource_type,	gender,	region]`);
+        setMessage(`Error: columns name must be [name, title, release_date, class, range_type, resource_type,	gender,	region] and value must be [string, string, date, string, string, string, string, string]`);
       }
     } catch (error) {
       setMessage("Error connecting to database. Please try again.");
@@ -163,14 +163,14 @@ export default function Upload() {
           </div>
 
           {!hasFile && data.length === 0 && !isLoading && (
-            <p className="mt-2 text-xl bg-red-500/20 text-red-200 mb-4 p-3 rounded">
+            <p className="mt-2 text-xl bg-red-400 text-red-100 mb-4 p-3 rounded">
               Upload a file
             </p>
           )}
         </div>
 
         {message && (
-          <div className={`mb-4 p-3 rounded ${message.includes('Error') ? 'bg-red-500/20 text-red-200' : 'bg-green-500/20 text-green-200'}`}>
+          <div className={`text-xl mb-4 p-3 rounded ${message.includes('Error') ? 'bg-red-400 text-red-100' : 'bg-green-400 text-green-100'}`}>
             {message}
           </div>
         )}

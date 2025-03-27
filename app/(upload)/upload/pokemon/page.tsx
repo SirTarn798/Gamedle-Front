@@ -9,8 +9,8 @@ export default function Upload() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
   const [hasFile, setHasFile] = useState<boolean>(false);
-  const urlChampionAPI = 'http://localhost/api/champions/bulk';
-  const columnName = ['name', 'title', 'release_date', 'class', 'range_type', 'resource_type', 'gender', 'role'];
+  const urlPokemonAPI = 'http://localhost/api/pokemons/bulk';
+  const columnName = ['name', 'type1', 'type2', 'height', 'weight', 'attack', 'defence', 'speed', 'generation'];
   const [importDataColumns, setImportDataColumns] = useState<string[] | null>(null);
 
 
@@ -63,8 +63,8 @@ export default function Upload() {
       setImportDataColumns(null);
     };
   };
-  const dateColumns = ["release_date"]; // Add all your date column headers here
-  const columnsToCheck = ['release_date', 'class', 'range_type', 'resource_type', 'gender', 'role'];
+  const dateColumns = [""]; // Add all your date column headers here
+  const columnsToCheck = ['name', 'type1', 'type2', 'height', 'weight', 'attack', 'defence', 'speed', 'generation'];
 
   const processData = (rawData: any[]) => {
     return rawData.map(item => {
@@ -101,7 +101,7 @@ export default function Upload() {
     setMessage("Saving to database...");
 
     try {
-      const response = await fetch(urlChampionAPI, {
+      const response = await fetch(urlPokemonAPI, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,11 +114,11 @@ export default function Upload() {
       });
 
       const result = await response.json();
-
+      console.log("data", data)
       if (response.ok) {
         setMessage(`Successfully saved ${data.length} records to database`);
       } else {
-        setMessage(`Error: columns name must be [name, title, release_date, class, range_type, resource_type,	gender,	region]`);
+        setMessage(`Error: columns name must be [name, type1, type2, height, weight, attack, defence, speed, generation] and value must be [string, string, string, number, number, number, number, number, number]`);
       }
     } catch (error) {
       setMessage("Error connecting to database. Please try again.");
@@ -163,14 +163,14 @@ export default function Upload() {
           </div>
 
           {!hasFile && data.length === 0 && !isLoading && (
-            <p className="mt-2 text-xl bg-red-500/20 text-red-200 mb-4 p-3 rounded">
+            <p className="mt-2 text-xl bg-red-400 text-red-100 mb-4 p-3 rounded">
               Upload a file
             </p>
           )}
         </div>
 
         {message && (
-          <div className={`mb-4 p-3 rounded ${message.includes('Error') ? 'bg-red-500/20 text-red-200' : 'bg-green-500/20 text-green-200'}`}>
+          <div className={`mb-4 p-3 rounded ${message.includes('Error') ? 'bg-red-400 text-red-100' : 'bg-green-400 text-green-100'}`}>
             {message}
           </div>
         )}

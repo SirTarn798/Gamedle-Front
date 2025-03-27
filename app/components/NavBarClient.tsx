@@ -23,14 +23,27 @@ function NavBarClient({ isLoggedIn, onLogout, userName, userRole, userPoint }: {
     }
     return(
         <nav className="flex justify-between w-full h-fit bg-mainTheme border-4 border-borderColor items-center">
-            <Link href="/">
-                <Image src="/Logo.png" height={120} width={180} alt="Logo" className="m-3"/>
-            </Link>
+            <div>
+            {userRole === "ADMIN" ? (
+                <Link href="/admin">
+                    <Image src="/Logo.png" height={120} width={180} alt="Logo" className="m-3"/>
+                </Link>
+            ) : (
+                <Link href="/">
+                    <Image src="/Logo.png" height={120} width={180} alt="Logo" className="m-3"/>
+                </Link>
+            )}
+            </div>
+
             <div className="flex gap-10 m-3 text-white items-center text-xl">
                 <div className="flex-col">
                     <div>name : {userName}</div>
                     <div>role {userRole}</div>
-                    <div>point {userPoint}</div>
+                    <div>
+                        {userRole === "ADMIN" ? null : (
+                            <div>point {userPoint}</div>
+                        )}
+                    </div>
                 </div>
                 <button onClick={onLogout} className="text-3xl p-2 pixelBorder">logout</button>
             </div>

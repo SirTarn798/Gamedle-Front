@@ -5,7 +5,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function login(prevState: any, formData: FormData) {
-
   const userEmail = formData.get('email');
   const userPassword = formData.get('password');
 
@@ -40,6 +39,12 @@ export async function login(prevState: any, formData: FormData) {
         message: "Cannot connect to server",
       },
     };
+  }
+  const cookie = (await cookies()).get("session")?.value;
+  const session = await decrypt(cookie);
+  const userRole = session?.user?.role;
+  if (userRole === "ADMIN") {
+    redirect("/admin");
   }
   redirect("/");
 }
