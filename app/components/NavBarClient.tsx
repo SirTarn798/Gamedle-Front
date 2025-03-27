@@ -36,9 +36,15 @@ function NavBarClient({ isLoggedIn, onLogout, userName, userRole, userPoint }: {
             </div>
 
             <div className="flex gap-10 m-3 text-white items-center text-xl">
+                <div>
+                    <Link href="/profile">
+                        <img src="/user.png" className="h-[50] rounded-full object-cover border border-2 border-white">
+                        </img>
+                    </Link>
+                </div>
                 <div className="flex-col">
                     <div>name : {userName}</div>
-                    <div>role {userRole}</div>
+                    {/* <div>role : {userRole}</div> */}
                     <div>
                         {userRole === "ADMIN" ? null : (
                             <div>point {userPoint}</div>

@@ -2,10 +2,10 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
 
-const authRoutes = ["/upload", "/admin", "/pokemon", "/league"];
-const publicRoutes = ["/login"];
+const authRoutes = ["/upload", "/admin", "/pokemon", "/league", "profile"];
+const publicRoutes = ["/login", "/register"];
 const adminRoutes = ["/upload", "/admin"]; // Example admin-only routes
-const playerRoutes = ["/", "/pokemon", "/league"]; // Example player-only routes
+const playerRoutes = ["/", "/pokemon", "/league", "/profile"]; // Example player-only routes
 
 export default async function middleware(req: NextRequest) {
     const cookie = (await cookies()).get("session")?.value;
