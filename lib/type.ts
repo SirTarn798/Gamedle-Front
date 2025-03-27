@@ -53,9 +53,11 @@ export type pokemon = {
   name:string,
   type1 : string,
   type2 : string | null,
-  class : string,
   height : number,
   weight : number,
+  attack : number,
+  defense : number,
+  speed : number,
   abilities : string[],
   generation : number,
   pictures : string[];

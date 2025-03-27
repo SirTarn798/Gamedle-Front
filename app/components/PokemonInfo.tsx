@@ -17,10 +17,12 @@ interface PokemonInfoProps {
 function validatePokemonFields(editedPokemon: pokemon) {
   if (
     editedPokemon.name === "" ||
-    editedPokemon.class === "" ||
     editedPokemon.generation < 1 ||
     editedPokemon.height <= 0 ||
     editedPokemon.weight <= 0 ||
+    editedPokemon.attack < 0 ||
+    editedPokemon.defense < 0 ||
+    editedPokemon.speed < 0 ||
     editedPokemon.type1 === "" ||
     editedPokemon.abilities.length === 0 ||
     editedPokemon.abilities.includes("")
@@ -64,7 +66,9 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
       name === "height" ||
       name === "weight" ||
       name === "generation" ||
-      name === "id"
+      name === "attack" ||
+      name === "defense" ||
+      name === "speed"
     ) {
       setEditedPokemon({
         ...editedPokemon,
@@ -149,7 +153,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
     setIsSaving(true);
     setSaveStatus("idle");
 
-    if(!validatePokemonFields(editedPokemon)) {
+    if (!validatePokemonFields(editedPokemon)) {
       toast.error("Please validate each element in form.")
       setIsSaving(false);
       return;
@@ -158,7 +162,9 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
     const formData = new FormData();
 
     // Add champion name
+    formData.append("editedPokemon", JSON.stringify(editedPokemon));
     formData.append("pokemonName", pokemon.name);
+
 
     // Add new pictures
     imageChanges.added.forEach((file) => {
@@ -270,9 +276,8 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                     className="bg-gray-700 text-white px-2 py-1 rounded text-2xl font-normal mb-1"
                   />
                   <p
-                    className={`${
-                      editedPokemon.name === "" ? "" : "hidden"
-                    } text-cancelRed `}
+                    className={`${editedPokemon.name === "" ? "" : "hidden"
+                      } text-cancelRed `}
                   >
                     Please insert pokemon's name
                   </p>
@@ -289,9 +294,8 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                     className="bg-gray-700 text-white px-2 py-1 rounded text-sm italic"
                   />
                   <p
-                    className={`${
-                      editedPokemon.class === "" ? "" : "hidden"
-                    } text-cancelRed `}
+                    className={`${editedPokemon.class === "" ? "" : "hidden"
+                      } text-cancelRed `}
                   >
                     Please insert pokemon's class
                   </p>
@@ -304,13 +308,12 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
           <button
             onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
             disabled={isSaving}
-            className={`px-4 py-2 rounded-md font-medium ${
-              isSaving
+            className={`px-4 py-2 rounded-md font-medium ${isSaving
                 ? "bg-gray-500 cursor-not-allowed"
                 : isEditing
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
           >
             {isEditing ? "Save" : "Edit"}
           </button>
@@ -329,9 +332,8 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                     className="bg-gray-700 text-white px-2 py-1 rounded w-full"
                   />
                   <p
-                    className={`${
-                      editedPokemon.type1 === "" ? "" : "hidden"
-                    } text-cancelRed `}
+                    className={`${editedPokemon.type1 === "" ? "" : "hidden"
+                      } text-cancelRed `}
                   >
                     Please insert pokemon's name
                   </p>
@@ -369,9 +371,8 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                     className="bg-gray-700 text-white px-2 py-1 rounded w-full"
                   />
                   <p
-                    className={`${
-                      editedPokemon.height <= 0 ? "" : "hidden"
-                    } text-cancelRed `}
+                    className={`${editedPokemon.height <= 0 ? "" : "hidden"
+                      } text-cancelRed `}
                   >
                     Pokemon's height needs to be higher than 0
                   </p>
@@ -393,9 +394,8 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                     className="bg-gray-700 text-white px-2 py-1 rounded w-full"
                   />
                   <p
-                    className={`${
-                      editedPokemon.weight <= 0 ? "" : "hidden"
-                    } text-cancelRed `}
+                    className={`${editedPokemon.weight <= 0 ? "" : "hidden"
+                      } text-cancelRed `}
                   >
                     Pokemon's weight needs to be higher than 0
                   </p>
@@ -404,9 +404,79 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                 <p>{pokemon.weight} kg</p>
               )}
             </div>
+            <div>
+              <label className="block text-gray-400 text-sm">Attack</label>
+              {isEditing ? (
+                <div>
+                  <input
+                    type="number"
+                    name="attack"
+                    value={editedPokemon.attack}
+                    onChange={handleInputChange}
+                    step="0.1"
+                    className="bg-gray-700 text-white px-2 py-1 rounded w-full"
+                  />
+                  <p
+                    className={`${editedPokemon.attack < 0 ? "" : "hidden"
+                      } text-cancelRed `}
+                  >
+                    Pokemon's attack needs to be higher than 0
+                  </p>
+                </div>
+              ) : (
+                <p>{pokemon.attack}</p>
+              )}
+            </div>
+
           </div>
 
           <div className="space-y-4">
+            <div>
+              <label className="block text-gray-400 text-sm">Defense</label>
+              {isEditing ? (
+                <div>
+                  <input
+                    type="number"
+                    name="defense"
+                    value={editedPokemon.defense}
+                    onChange={handleInputChange}
+                    step="0.1"
+                    className="bg-gray-700 text-white px-2 py-1 rounded w-full"
+                  />
+                  <p
+                    className={`${editedPokemon.defense < 0 ? "" : "hidden"
+                      } text-cancelRed `}
+                  >
+                    Pokemon's defense needs to be higher than 0
+                  </p>
+                </div>
+              ) : (
+                <p>{pokemon.defense}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm">Speed</label>
+              {isEditing ? (
+                <div>
+                  <input
+                    type="number"
+                    name="speed"
+                    value={editedPokemon.speed}
+                    onChange={handleInputChange}
+                    step="0.1"
+                    className="bg-gray-700 text-white px-2 py-1 rounded w-full"
+                  />
+                  <p
+                    className={`${editedPokemon.speed < 0 ? "" : "hidden"
+                      } text-cancelRed `}
+                  >
+                    Pokemon's speed needs to be higher than 0
+                  </p>
+                </div>
+              ) : (
+                <p>{pokemon.speed}</p>
+              )}
+            </div>
             <div>
               <label className="block text-gray-400 text-sm">Generation</label>
               {isEditing ? (
@@ -419,9 +489,8 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                     className="bg-gray-700 text-white px-2 py-1 rounded w-full"
                   />
                   <p
-                    className={`${
-                      editedPokemon.generation <= 0 ? "" : "hidden"
-                    } text-cancelRed `}
+                    className={`${editedPokemon.generation <= 0 ? "" : "hidden"
+                      } text-cancelRed `}
                   >
                     Pokemon's generation needs to be higher than 0
                   </p>
@@ -462,12 +531,11 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
                     Add Ability
                   </button>
                   <p
-                    className={`${
-                      editedPokemon.abilities.includes("") ||
-                      editedPokemon.abilities.length < 1
+                    className={`${editedPokemon.abilities.includes("") ||
+                        editedPokemon.abilities.length < 1
                         ? ""
                         : "hidden"
-                    } text-cancelRed `}
+                      } text-cancelRed `}
                   >
                     Please make sure there are no empty ability and atleast 1
                     ability.

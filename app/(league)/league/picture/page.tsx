@@ -2,11 +2,13 @@
 
 import LeagueClassicItem from "@/app/components/LeagueClassicItem";
 import { championsData } from "@/lib/exampleData";
-import { useState } from "react";
+import { useActionState, useState } from "react";
+import { guessChampionPicture } from "../action";
 
 function LeagueClassic() {
 
     const [zoomLevel, setZoomLevel] = useState(24);
+    const [state, guessChamp] = useActionState(guessChampionPicture, undefined);
 
     const handleZoomOut = () => {
         setZoomLevel(prev => Math.max(1, prev - 2));
@@ -18,10 +20,11 @@ function LeagueClassic() {
                 Guess The Champion
             </h1>
 
-            <form action="" className="w-full relative mb-8">
+            <form action={guessChamp} className="w-full relative mb-8">
                 <input
                     type="text"
                     className="w-full p-3 bg-mainTheme border-4 border-white text-lg"
+                    name="champName"
                 />
                 <button
                     type="submit"

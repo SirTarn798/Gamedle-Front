@@ -155,6 +155,8 @@ export default function ChampionInfo({ champ }: ChampionInfoProps) {
     
     // Add champion name
     formData.append("editedChamp", JSON.stringify(editedChamp))
+    formData.append("championName", champ.name)
+
     // Add icon if changed
     if (imageChanges.icon) {
       formData.append("icon", imageChanges.icon);

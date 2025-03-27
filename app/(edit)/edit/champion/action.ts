@@ -1,14 +1,17 @@
 "use server"
 
 import R2ClientSingleton, { deleteFromR2, uploadToR2 } from "@/lib/r2";
+import { decrypt } from "@/lib/session";
 import { UpdateChampPayload } from "@/lib/type";
 import { generateFileName } from "@/lib/util";
+import { cookies } from "next/headers";
 
 export async function updateChampion(formData: FormData) {
     const s3Client = R2ClientSingleton.getInstance();
     const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME;
     const championName = formData.get('championName') as string;
-    console.log(formData);
+    const cookie = (await cookies()).get("session")?.value;
+      const session = await decrypt(cookie);
     // Array to store new image URLs
     const newImageUrls: string[] = [];
 
@@ -40,6 +43,16 @@ export async function updateChampion(formData: FormData) {
     editedChamp["addedPictures"] = newImageUrls;
     delete editedChamp["pictures"];
     console.log(editedChamp);
+    const link = `${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/update_champion_and_image`;
 
+    const response = await fetch(link, {
+        method: "PATCH",
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.token}`,
+        },
+        body: JSON.stringify(editedChamp)
+    });
     return;
 }

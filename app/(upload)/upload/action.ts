@@ -93,13 +93,35 @@ export async function saveToDatabase(
 ) {
   const cookie = (await cookies()).get("session")?.value;
   const session = await decrypt(cookie);
-  const link = `${process.env.API_SERVER_URL}/${type}_${file}/upload`;
+  let link;
+  if (file === "icon") {
+    link = `${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/upload_icon`;
+  } else {
+    link = `${process.env.NEXT_PUBLIC_API_SERVER_URL}/${type}_images/upload_image`;
+  }
+  const formatted = Object.fromEntries(
+    Object.entries(urls).map(([key, value]) => [
+      `${key}`,
+      value.map(url => `${url}`)
+    ])
+  );
+  let formattedUrls;
+  if (file === "icon") { 
+    formattedUrls = Object.fromEntries(Object.entries(formatted).map(([key, value]) => [key, value[0]])); 
+  } else {
+    formattedUrls = formatted;
+  }
+  console.log(formattedUrls)
   const response = await fetch(link, {
-    method: "POST",
+    method: file === "icon" ? "PATCH" : "POST",
     headers: {
-        Accept: 'application.json',
-        Authorization: `Bearer ${session?.token}`,
-      },
-    body : JSON.stringify({urls})
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session?.token}`,
+    },
+    body: JSON.stringify(formattedUrls)
   });
+
+  console.log(response);
 }
+
