@@ -18,7 +18,7 @@ import { drawLevelIndicator } from "@/lib/drawingFuncs";
 import { toast, ToastContentProps } from "react-toastify";
 import Toast from "@/app/components/Toast";
 
-const socket = io("http://localhost:4000"); // Change to your server URL
+const socket = io("https://gamedle-socket.onrender.com"); // Change to your server URL
 
 const arrowSprite = new Image();
 const hitArrowSprite = new Image();
