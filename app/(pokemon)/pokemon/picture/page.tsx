@@ -1,12 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { guessPokemonClassic } from "../action";
+import { useState } from "react";
 
 export default function PokemonPicture() {
 
     const [zoomLevel, setZoomLevel] = useState(24);
-    const [state, guessPokemon] = useActionState(guessPokemonClassic, undefined);
 
     const handleZoomOut = () => {
         setZoomLevel(prev => Math.max(1, prev - 2));
@@ -18,12 +16,11 @@ export default function PokemonPicture() {
                 Who's that Pokémon?
             </h1>
 
-            <form action={guessPokemon} className="relative mb-8">
+            <form action="" className="relative mb-8">
                 <div className=" gameBorder2 flex flex-row flex-nowrap gap-[30px] px-[30px] py-[15px]">
                     <input
                         type="text"
                         className="w-75% focus:outline-none focus:ring-0 border-none bg-transparent text-2xl text-white"
-                        name="pokemonName"
                     />
                     <button
                         type="submit"

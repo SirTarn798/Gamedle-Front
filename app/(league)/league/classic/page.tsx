@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import LeagueClassicItem from "@/app/components/LeagueClassicItem";
 import { championsData } from "@/lib/exampleData";
+import { useActionState } from "react";
 import { guessChampionClassic } from "../action";
 import { useState, useEffect, useRef } from "react";
 
@@ -29,30 +29,106 @@ interface AutocompleteItem {
 }
 
 function LeagueClassic() {
+  const [inputValue, setInputValue] = useState('');
+  const [suggestions, setSuggestions] = useState<AutocompleteItem[]>([]);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<HTMLDivElement>(null);
+  const [state, guessChamp] = useActionState(guessChampionClassic, undefined);
+  const [champions, setChampions] = useState<Champion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [state, setState] = useState<any>(undefined);  // store the data received from server
-  const [loading, setLoading] = useState<boolean>(false);
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setInputValue(value);
 
-  // Handle form submission
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // prevent default form submission
-    setLoading(true); // set loading state to true while fetching data
+    // Transform and filter fetched champions for autocomplete
+    const autocompleteSuggestions = champions
+      .filter((champ) =>
+        champ.name.toLowerCase().includes(value.toLowerCase())
+      )
+      .map((champ) => ({
+        value: champ.name,
+        label: champ.name,
+        image: champ.icon_url,
+      }));
 
-    const formData = new FormData(e.target as HTMLFormElement);
-    const result = await guessChampionClassic(state, formData);  // call the action
-    console.log(result);
-    setState(result);  // set the data returned from the action
-    setLoading(false);  // reset loading state
+    setSuggestions(autocompleteSuggestions);
   };
+
+  const handleSelect = (item: AutocompleteItem) => {
+    setInputValue(item.value);
+    setSuggestions([]);
+    setIsInputFocused(false);
+  };
+
+  const handleInputFocus = () => {
+    setIsInputFocused(true);
+  };
+
+  const handleInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    setTimeout(() => {
+      if (
+        autocompleteRef.current &&
+        !autocompleteRef.current.contains(document.activeElement)
+      ) {
+        setIsInputFocused(false);
+        setSuggestions([]);
+      }
+    }, 100);
+  };
+
+  useEffect(() => {
+    async function fetchChampions() {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions`, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch champions');
+        }
+
+        const data = await response.json();
+        setChampions(data.data); // Assuming your API response has a 'data' array
+        setIsLoading(false);
+      } catch (err) {
+        setError('Unable to load champions');
+        setIsLoading(false);
+        console.error(err);
+      }
+    }
+
+    fetchChampions();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen text-white text-2xl">
+        Loading champions...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen text-red-500 text-2xl">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-8 mt-12 mb-24 w-full max-w-5xl">
       <h1 className="text-white text-5xl tracking-wider pixelBorder bg-mainTheme cursor-default">
         Guess The Champion
       </h1>
-
-      <form onSubmit={handleFormSubmit} className="w-full relative mb-8">
-
+      <form action={guessChamp} className="w-full relative mb-8" autoComplete="off">
         <input
           ref={inputRef}
           type="text"
@@ -87,8 +163,6 @@ function LeagueClassic() {
         </button>
       </form>
 
-      {loading && <div>Loading...</div>}
-
       <div className="w-full grid grid-cols-6 gap-4 text-white cursor-default">
         <div className="text-xl p-2 border-b-2 text-center">Champion</div>
         <div className="text-xl p-2 border-b-2 text-center">Role</div>
@@ -98,16 +172,9 @@ function LeagueClassic() {
         <div className="text-xl p-2 border-b-2 text-center">Gender</div>
       </div>
 
-
-      {state && state.map((champion: any, index: number) => (
-        <LeagueClassicItem key={index} {...champion} />
-      ))}
-
-      {/* If no data yet, show the default champions data */}
-      {!state && championsData.map((champion, index) => (
-        <LeagueClassicItem key={index} {...champion} />
-      ))}
-
+      {/* {championsData.map((champion) => (
+        <LeagueClassicItem key={champion.id} {...champion} />
+      ))} */}
     </div>
   );
 }
