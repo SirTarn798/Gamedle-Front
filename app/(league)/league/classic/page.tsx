@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import LeagueClassicItem from "@/app/components/LeagueClassicItem";
-import { championsData } from "@/lib/exampleData";
 
 interface Champion {
   id: number;
@@ -20,21 +18,25 @@ interface Champion {
   roles: string[];
 }
 
-interface GuessResponse {
-  result: {
+interface GuessResult {
+  data: {
     name: { value: string; correct: boolean };
     title: { value: string; correct: boolean };
+    gender: { value: string; correct: boolean };
+    class: { value: string; correct: boolean }
+    roles: { value: string[]; correct: boolean; roles_match: { match: "none" | "partial" | "exact", matching_roles: string[] } }
+    resource_type: { value: string; correct: boolean };
+    range_type: { value: string; correct: boolean };
+    region: { value: string; correct: boolean };
     release_date: { value: string; correct: boolean; hint?: string };
-    class: { value: string; correct: boolean };
-  };
+  },
+  type: "progress" | "result";
 }
 
 function LeagueClassic() {
-  const [state, setState] = useState<Champion[] | null>(null);
+  const [guessHistory, setGuessHistory] = useState<GuessResult[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [guessResult, setGuessResult] = useState<GuessResponse | null>(null);
 
-  // Handle form submission
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -59,14 +61,54 @@ function LeagueClassic() {
       }
 
       const result = await response.json();
-      setGuessResult(result);
+      const extractedData: GuessResult = [
+        ...Object.values(result.progress)
+          .map(entry => ({
+            type: "progress",
+            data: entry.pivot.details.result
+          }))
+      ].reverse();
+
+      setGuessHistory(extractedData);
+      console.log(extractedData)
     } catch (error) {
       console.error('Error:', error);
-      setGuessResult(null);
     } finally {
       setLoading(false);
+      (e.target as HTMLFormElement).reset();
     }
   };
+
+  const renderCell = (value: string, correct: boolean) => (
+    <div
+      className={`p-2 text-center ${correct ? 'bg-green-600' : 'bg-red-600'
+        }`}
+    >
+      {value}
+    </div>
+  );
+
+  const renderCellForRoles = (value: string, roles_match: { match: "none" | "partial" | "exact", matching_roles: string[] }) => {
+    return (
+      <div
+        className={`p-2 text-center ${roles_match.match === "exact" ? 'bg-green-600' : roles_match.match === "partial" ? 'bg-yellow-600' : 'bg-red-600'
+          }`}
+      >
+        {value}
+      </div>
+    )
+  }
+
+  const renderCellYear = (value : string, correct : boolean, hint : "Too Early" | "Too Late") => {
+    return(
+      <div
+        className={`p-2 text-center ${correct ? 'bg-green-600' : 'bg-red-600'
+          }`}
+      >
+        {value} ({hint})
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col items-center gap-8 mt-12 mb-24 w-full max-w-5xl">
@@ -91,54 +133,54 @@ function LeagueClassic() {
 
       {loading && <div className="text-white">Loading...</div>}
 
-      {guessResult && (
-        <div className="w-full text-white space-y-4">
-          <h2 className="text-2xl text-center">Guess Result</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-xl p-2 border-b-2 text-center">
-              <p>Name: {guessResult.result.name.value}</p>
-              <p>Correct: {guessResult.result.name.correct ? 'Yes' : 'No'}</p>
-            </div>
-            <div className="text-xl p-2 border-b-2 text-center">
-              <p>Class: {guessResult.result.class.value}</p>
-              <p>Correct: {guessResult.result.class.correct ? 'Yes' : 'No'}</p>
-            </div>
-            <div className="text-xl p-2 border-b-2 text-center">
-              <p>Release Date: {guessResult.result.release_date.value}</p>
-              <p>Correct: {guessResult.result.release_date.correct ? 'Yes' : 'No'}</p>
-              {guessResult.result.release_date.hint && (
-                <p>Hint: {guessResult.result.release_date.hint}</p>
-              )}
-            </div>
-            <div className="text-xl p-2 border-b-2 text-center">
-              <p>Gender: {guessResult.result.gender.value}</p>
-              <p>Correct: {guessResult.result.gender.correct ? 'Yes' : 'No'}</p>
-            </div>
-            <div className="text-xl p-2 border-b-2 text-center">
-              <p>Roles: {guessResult.result.roles.value}</p>
-              <p>Correct: {guessResult.result.roles.correct ? 'Yes' : 'No'}</p>
-            </div>
-            <div className="text-xl p-2 border-b-2 text-center">
-              <p>Range_Type: {guessResult.result.range_type.value}</p>
-              <p>Correct: {guessResult.result.range_type.correct ? 'Yes' : 'No'}</p>
-            </div>
-          </div>
+      {guessHistory.length > 0 && (
+        <div className="w-full overflow-x-auto">
+          <table className="w-full text-white border-collapse">
+            <thead>
+              <tr>
+                <th className="p-2 border bg-mainTheme">Champion</th>
+                <th className="p-2 border bg-mainTheme">Gender</th>
+                <th className="p-2 border bg-mainTheme">Position</th>
+                <th className="p-2 border bg-mainTheme">Species</th>
+                <th className="p-2 border bg-mainTheme">Resource</th>
+                <th className="p-2 border bg-mainTheme">Range</th>
+                <th className="p-2 border bg-mainTheme">Region</th>
+                <th className="p-2 border bg-mainTheme">Release Year</th>
+              </tr>
+            </thead>
+            <tbody>
+              {guessHistory?.map((guess, index) => (
+                <tr key={index}>
+                  <td className="border">
+                    {renderCell(guess.data.name.value, guess.data.name.correct)}
+                  </td>
+                  <td className="border">
+                    {renderCell(guess.data.gender.value, guess.data.gender.correct)}
+                  </td>
+                  <td className="border">
+                    {renderCell(guess.data.class.value, guess.data.class.correct)}
+                  </td>
+                  <td className="border">
+                    {renderCellForRoles(guess.data.roles.value.toString(), guess.data.roles.roles_match)}
+                  </td>
+                  <td className="border">
+                    {renderCell(guess.data.resource_type.value, guess.data.resource_type.correct)}
+                  </td>
+                  <td className="border">
+                    {renderCell(guess.data.range_type.value, guess.data.range_type.correct)}
+                  </td>
+                  <td className="border">
+                    {renderCell(guess.data.region.value, guess.data.region.correct)}
+                  </td>
+                  <td className="border">
+                    {renderCellYear(guess.data.release_date.value, guess.data.release_date.correct, guess.data.release_date.hint)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
-
-      {/* <div className="w-full grid grid-cols-6 gap-4 text-white cursor-default">
-        <div className="text-xl p-2 border-b-2 text-center">Champion</div>
-        <div className="text-xl p-2 border-b-2 text-center">Role</div>
-        <div className="text-xl p-2 border-b-2 text-center">Type</div>
-        <div className="text-xl p-2 border-b-2 text-center">Range</div>
-        <div className="text-xl p-2 border-b-2 text-center">Resource</div>
-        <div className="text-xl p-2 border-b-2 text-center">Gender</div>
-      </div> */}
-
-      {/* If no data yet, show the default champions data */}
-      {/* {!state && championsData.map((champion, index) => (
-        <LeagueClassicItem key={index} {...champion} />
-      ))} */}
     </div>
   );
 }
