@@ -106,7 +106,7 @@ export default function PokemonsPage() {
               Upload File
             </button>
           </Link>
-          <Link href="">
+          <Link href="/upload/pokemon/picture">
             <button
               className="bg-green-300 hover:bg-green-400 py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-green-500"
             >
@@ -162,11 +162,11 @@ export default function PokemonsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <img
+                      {/* <img
                         className="h-8 w-8 rounded-full object-cover mr-2"
                         src={pokemon.icon_url}
                         alt={`${pokemon.name} Icon`}
-                      />
+                      /> */}
                       <div className="font-medium text-gray-900">{pokemon.name}</div>
                     </div>
                   </td>
@@ -174,8 +174,8 @@ export default function PokemonsPage() {
                     {pokemon.title}
                   </td> */}
                   <td className="px-6 py-4 whitespace-nowrap font-medium flex center">
-                    <Link href={`/admin/pokemons/${pokemon.id}`} className="text-amber-600 hover:text-amber-900 mr-4">
-                      Edit
+                    <Link href={`/admin/pokemons/${pokemon.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                      View
                     </Link>
                     {/* You can add more actions here, like edit or delete */}
                   </td>

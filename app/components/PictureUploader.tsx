@@ -173,11 +173,12 @@ export default function PictureUploader(data: UploadPicture) {
       setMessage("No images to upload");
       return;
     }
+    console.log(allChampions)
     const missingNames =
       data.type === "champion"
-        ? Object.keys(imageGroups).filter(nameA => !allChampions.some(champ => champ.name === nameA))
+        ? Object.keys(imageGroups).filter(nameA => !allChampions.data.some(champ => champ.name === nameA))
         : data.type === "pokemon"
-          ? Object.keys(imageGroups).filter(nameA => !allPokemons.some(pokemon => pokemon.name === nameA))
+          ? Object.keys(imageGroups).filter(nameA => !allPokemons.data.some(pokemon => pokemon.name === nameA))
           : [];
 
     if (missingNames.length > 0) {

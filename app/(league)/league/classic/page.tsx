@@ -3,8 +3,6 @@
 import { useState } from "react";
 import LeagueClassicItem from "@/app/components/LeagueClassicItem";
 import { championsData } from "@/lib/exampleData";
-import { guessChampionClassic } from "../action";
-import { useState, useEffect, useRef } from "react";
 
 interface Champion {
   id: number;
@@ -22,27 +20,52 @@ interface Champion {
   roles: string[];
 }
 
-interface AutocompleteItem {
-  value: string;
-  label: string;
-  image: string;
+interface GuessResponse {
+  result: {
+    name: { value: string; correct: boolean };
+    title: { value: string; correct: boolean };
+    release_date: { value: string; correct: boolean; hint?: string };
+    class: { value: string; correct: boolean };
+  };
 }
 
 function LeagueClassic() {
-
-  const [state, setState] = useState<any>(undefined);  // store the data received from server
+  const [state, setState] = useState<Champion[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [guessResult, setGuessResult] = useState<GuessResponse | null>(null);
 
   // Handle form submission
   const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // prevent default form submission
-    setLoading(true); // set loading state to true while fetching data
+    e.preventDefault();
+    setLoading(true);
 
     const formData = new FormData(e.target as HTMLFormElement);
-    const result = await guessChampionClassic(state, formData);  // call the action
-    console.log(result);
-    setState(result);  // set the data returned from the action
-    setLoading(false);  // reset loading state
+    const champName = formData.get('champName') as string;
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/guess`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          'player_id': 21,
+          'name': champName
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const result = await response.json();
+      setGuessResult(result);
+    } catch (error) {
+      console.error('Error:', error);
+      setGuessResult(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,33 +75,12 @@ function LeagueClassic() {
       </h1>
 
       <form onSubmit={handleFormSubmit} className="w-full relative mb-8">
-
         <input
-          ref={inputRef}
           type="text"
           className="w-full p-3 bg-mainTheme border-4 border-white text-2xl text-white"
           name="champName"
-          value={inputValue}
-          onChange={handleChange}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
+          placeholder="Enter champion name"
         />
-        <div ref={autocompleteRef} className={`absolute bg-mainTheme border-4 border-white w-full z-[10] ${!isInputFocused ? 'hidden' : ''}`}>
-          {suggestions.length > 0 && (
-            <ul className="autocomplete-list">
-              {suggestions.map((item) => (
-                <li
-                  key={item.value}
-                  onClick={() => handleSelect(item)}
-                  className="autocomplete-item flex items-center gap-2 cursor-pointer p-2 hover:bg-white/10"
-                >
-                  <img src={item.image} alt={item.label} className="autocomplete-image h-8 w-8 rounded-full" />
-                  <span className="text-white">{item.label}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
         <button
           type="submit"
           className="absolute right-3 top-1/2 -translate-y-1/2"
@@ -87,27 +89,56 @@ function LeagueClassic() {
         </button>
       </form>
 
-      {loading && <div>Loading...</div>}
+      {loading && <div className="text-white">Loading...</div>}
 
-      <div className="w-full grid grid-cols-6 gap-4 text-white cursor-default">
+      {guessResult && (
+        <div className="w-full text-white space-y-4">
+          <h2 className="text-2xl text-center">Guess Result</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-xl p-2 border-b-2 text-center">
+              <p>Name: {guessResult.result.name.value}</p>
+              <p>Correct: {guessResult.result.name.correct ? 'Yes' : 'No'}</p>
+            </div>
+            <div className="text-xl p-2 border-b-2 text-center">
+              <p>Class: {guessResult.result.class.value}</p>
+              <p>Correct: {guessResult.result.class.correct ? 'Yes' : 'No'}</p>
+            </div>
+            <div className="text-xl p-2 border-b-2 text-center">
+              <p>Release Date: {guessResult.result.release_date.value}</p>
+              <p>Correct: {guessResult.result.release_date.correct ? 'Yes' : 'No'}</p>
+              {guessResult.result.release_date.hint && (
+                <p>Hint: {guessResult.result.release_date.hint}</p>
+              )}
+            </div>
+            <div className="text-xl p-2 border-b-2 text-center">
+              <p>Gender: {guessResult.result.gender.value}</p>
+              <p>Correct: {guessResult.result.gender.correct ? 'Yes' : 'No'}</p>
+            </div>
+            <div className="text-xl p-2 border-b-2 text-center">
+              <p>Roles: {guessResult.result.roles.value}</p>
+              <p>Correct: {guessResult.result.roles.correct ? 'Yes' : 'No'}</p>
+            </div>
+            <div className="text-xl p-2 border-b-2 text-center">
+              <p>Range_Type: {guessResult.result.range_type.value}</p>
+              <p>Correct: {guessResult.result.range_type.correct ? 'Yes' : 'No'}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* <div className="w-full grid grid-cols-6 gap-4 text-white cursor-default">
         <div className="text-xl p-2 border-b-2 text-center">Champion</div>
         <div className="text-xl p-2 border-b-2 text-center">Role</div>
         <div className="text-xl p-2 border-b-2 text-center">Type</div>
         <div className="text-xl p-2 border-b-2 text-center">Range</div>
         <div className="text-xl p-2 border-b-2 text-center">Resource</div>
         <div className="text-xl p-2 border-b-2 text-center">Gender</div>
-      </div>
-
-
-      {state && state.map((champion: any, index: number) => (
-        <LeagueClassicItem key={index} {...champion} />
-      ))}
+      </div> */}
 
       {/* If no data yet, show the default champions data */}
-      {!state && championsData.map((champion, index) => (
+      {/* {!state && championsData.map((champion, index) => (
         <LeagueClassicItem key={index} {...champion} />
-      ))}
-
+      ))} */}
     </div>
   );
 }

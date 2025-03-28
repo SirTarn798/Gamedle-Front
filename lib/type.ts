@@ -36,16 +36,17 @@ export type UploadPicture = {
 export type champion = {
   id: number,
   name: string,
-  region: string,
-  gender: "male" | "female" | null,
-  nick_name: string,
-  class: string,
-  release_date: Date,
-  role: lane[],
-  range_type: "melee" | "ranged",
-  resource_type: string,
-  icon: string,
-  pictures: string[];
+  title : string,
+  release_date : Date,
+  class : string,
+  range_type : "Ranged" | "Melee",
+  resource_type : string,
+  gender : string,
+  region : string,
+  created_at : Date,
+  updated_at : Date,
+  icon_url : string,
+  roles : string[]
 }
 
 export type pokemon = {

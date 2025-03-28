@@ -84,14 +84,19 @@ export default function User({ params }: { params: { userId: string } }) {
               <p className="mt-1 max-w-2xl text-sm text-gray-500">Personal details and account information.</p>
             </div>
             <div className='flex gap-5'>
-            <Link href="/admin/users">
-              <button
-                className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-red-800"
-                onClick={() => handleDelete(user.id)}
-              >
-                Delete
-              </button>
-            </Link>
+            {user.role != "ADMIN" ?
+                        <Link href="/admin/users">
+                        <button
+                          className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-red-800"
+                          onClick={() => handleDelete(user.id)}
+                        >
+                          Delete
+                        </button>
+                      </Link> 
+                      : 
+                      null
+            }
+
             {/* <Link href="">
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline active:bg-blue-800"

@@ -37,7 +37,7 @@ export default function PokemonDetails({ params }: { params: { pokemonId: string
     const fetchPokemon = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/${pokemonId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/pokemons/${pokemonId}`, {
           method: 'GET',
           headers: {
             Accept: 'application/json',
@@ -74,7 +74,7 @@ export default function PokemonDetails({ params }: { params: { pokemonId: string
   }
 
   const handleDelete = (id) => {
-    const response = fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/${id}`, {
+    const response = fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/pokemons/${pokemonId}`, {
       method: 'DELETE',
       headers: {
         Accept: 'application/json',
@@ -136,35 +136,47 @@ export default function PokemonDetails({ params }: { params: { pokemonId: string
               <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.id}</dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500">Class</dt>
-              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.class}</dd>
+              <dt className="font-medium text-gray-500">Name</dt>
+              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.name}</dd>
+            </div>
+            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="font-medium text-gray-500">Type1</dt>
+              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.type1}</dd>
+            </div>
+            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="font-medium text-gray-500">Type</dt>
+              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.type2}</dd>
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500">Role </dt>
+              <dt className="font-medium text-gray-500">Ability </dt>
               <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">
-                {pokemon.roles && pokemon.roles.map((role, index) => (
+                {pokemon.abilities && pokemon.abilities.map((ability, index) => (
                   
-                  <span key={index} className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">• {role.role_name}<br></br></span>
+                  <span key={index} className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">• {ability}<br></br></span>
                 ))}
               </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500">Range Type</dt>
-              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.range_type}</dd>
+              <dt className="font-medium text-gray-500">Height</dt>
+              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.height}</dd>
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500">Resource Type</dt>
-              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.resource_type}</dd>
+              <dt className="font-medium text-gray-500">Weight</dt>
+              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.weight}</dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500">Gender</dt>
-              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.gender}</dd>
+              <dt className="font-medium text-gray-500">Attack</dt>
+              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.attack}</dd>
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500">Region</dt>
-              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.region}</dd>
+              <dt className="font-medium text-gray-500">Defence</dt>
+              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.defence}</dd>
             </div>
-            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="font-medium text-gray-500">Speed</dt>
+              <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.speed}</dd>
+            </div>
+            {/* <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500">Release Date</dt>
               <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{new Date(pokemon.release_date).toLocaleDateString()}</dd>
             </div>
@@ -175,7 +187,7 @@ export default function PokemonDetails({ params }: { params: { pokemonId: string
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500">Last updated</dt>
               <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{new Date(pokemon.updated_at).toLocaleString()}</dd>
-            </div>
+            </div> */}
           </dl>
         </div>
       </div>

@@ -144,7 +144,7 @@ export default function ChampionDetails({ params }: { params: { championId: stri
               <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">
                 {champion.roles && champion.roles.map((role, index) => (
                   
-                  <span key={index} className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">• {role.role_name}<br></br></span>
+                  <span key={index} className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">• {role}<br></br></span>
                 ))}
               </dd>
             </div>
