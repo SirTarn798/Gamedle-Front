@@ -18,6 +18,7 @@ export async function login(prevState: any, formData: FormData) {
       body: JSON.stringify({ email: userEmail, password: userPassword }),
     });
     const data = await response.json();
+    console.log(data);
     const message = data.message;
     const token = data.token;
     const user = data.user;

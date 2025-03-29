@@ -9,7 +9,8 @@ export async function guessChampionClassic(prevState: ChampionGuessResult | unde
   const session = await decrypt(cookie);
   const link = `${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/guess`;
   const name = formData.get("champName");
-
+  const body = { "player_id": session?.user.id, "name": name }
+  console.log(body);
   try {
     const response = await fetch(link, {
       method: "POST",
@@ -18,8 +19,9 @@ export async function guessChampionClassic(prevState: ChampionGuessResult | unde
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session?.token}`,
       },
-      body: JSON.stringify({ "player_id": 1, "name": name })
+      body: JSON.stringify(body)
     });
+    console.log(response);
     const data = await response.json();
     return data;
   } catch (error) {
