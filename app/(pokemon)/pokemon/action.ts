@@ -9,7 +9,6 @@ export async function guessPokemonClassic(prevState: any, formData: FormData) {
   const link = `${process.env.NEXT_PUBLIC_API_SERVER_URL}/pokemons/guess`;
   const name = formData.get("pokemonName");
   const body = { "player_id": session?.user.id, "name": name }
-  console.log(body)
   try {
     const response = await fetch(link, {
       method: "POST",
@@ -21,7 +20,6 @@ export async function guessPokemonClassic(prevState: any, formData: FormData) {
       body: JSON.stringify(body)
     });
     const data = await response.json()
-    console.log("xdd");
   } catch (error) {
     console.log(error)
   }
@@ -45,7 +43,6 @@ export async function guessPokemonPicture(prevState: any, formData: FormData) {
     });
 
     const data = await response.json();
-    console.log(data);
   } catch (error) {
     console.log(error)
   }

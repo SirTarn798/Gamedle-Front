@@ -46,7 +46,6 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
       'player_id': userId.toString(),
       'name': champName
     }
-    console.log(body)
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/guess`, {
         method: 'POST',
@@ -55,7 +54,6 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
         },
         body: JSON.stringify(body)
       });
-      console.log(response)
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -70,7 +68,6 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
       ].reverse();
 
       setGuessHistory(extractedData);
-      console.log(extractedData)
     } catch (error) {
       console.error('Error:', error);
     } finally {

@@ -5,7 +5,6 @@ import { decrypt } from "@/lib/session";
 export default async function LeagueClassic() {
   const cookie = (await cookies()).get("session")?.value;
   const session = await decrypt(cookie);
-  console.log(session)
   const userId : string= session?.user.id;
   return (
     <div className="flex flex-col items-center gap-8 mt-12 mb-24 w-full max-w-5xl">

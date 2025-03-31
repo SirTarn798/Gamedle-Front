@@ -36,7 +36,6 @@ export async function updatePokemon(formData: FormData) {
     editedPokemon["deletedPictures"] = deletedPictures;
     editedPokemon["addedPictures"] = newImageUrls;
     delete editedPokemon["pictures"];
-    console.log(editedPokemon);
     const link = `${process.env.NEXT_PUBLIC_API_SERVER_URL}/pokemons/update_pokemon_and_image`;
 
     const response = await fetch(link, {

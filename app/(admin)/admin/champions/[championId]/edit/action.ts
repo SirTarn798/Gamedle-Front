@@ -42,7 +42,6 @@ export async function updateChampion(formData: FormData) {
     editedChamp["deletedPictures"] = deletedPictures;
     editedChamp["addedPictures"] = newImageUrls;
     delete editedChamp["pictures"];
-    console.log(editedChamp);
     const link = `${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/update_champion_and_image`;
 
     const response = await fetch(link, {
@@ -67,7 +66,6 @@ export async function getChampById(id : number) {
             }
         })
         const data = await response.json()
-        console.log(data);
         return data;
     } catch(error) {
         console.log(error)

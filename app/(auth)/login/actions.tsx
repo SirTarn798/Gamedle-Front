@@ -18,20 +18,16 @@ export async function login(prevState: any, formData: FormData) {
       body: JSON.stringify({ email: userEmail, password: userPassword }),
     });
     const data = await response.json();
-    console.log(data);
     const message = data.message;
     const token = data.token;
     const user = data.user;
     if ( response.status != 200) {
-      console.log("status code", response.status, "message", message);
-      console.log("message = ", message);
       return {
         errors: {
           message: message,
         },
       };
     } else {
-      console.log("Login successful:", data);
       await createSession(token, user);
     }
   } catch (error) {
