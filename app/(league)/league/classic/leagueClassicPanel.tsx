@@ -43,7 +43,7 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
     const formData = new FormData(e.target as HTMLFormElement);
     const champName = formData.get('champName') as string;
     const body = {
-      'player_id': userId.toString(),
+      'user_id': userId.toString(),
       'name': champName
     }
     try {
@@ -134,8 +134,8 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
               <tr>
                 <th className="p-2 border bg-mainTheme">Champion</th>
                 <th className="p-2 border bg-mainTheme">Gender</th>
-                <th className="p-2 border bg-mainTheme">Position</th>
-                <th className="p-2 border bg-mainTheme">Species</th>
+                <th className="p-2 border bg-mainTheme">Class</th>
+                <th className="p-2 border bg-mainTheme">Positions</th>
                 <th className="p-2 border bg-mainTheme">Resource</th>
                 <th className="p-2 border bg-mainTheme">Range</th>
                 <th className="p-2 border bg-mainTheme">Region</th>
