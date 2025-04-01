@@ -139,12 +139,12 @@ export default function PokemonDetails({ params }: { params: { pokemonId: string
               <dt className="font-medium text-gray-500">Name</dt>
               <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.name}</dd>
             </div>
-            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500">Type1</dt>
               <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.type1}</dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500">Type</dt>
+              <dt className="font-medium text-gray-500">Type2</dt>
               <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.type2}</dd>
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -172,7 +172,7 @@ export default function PokemonDetails({ params }: { params: { pokemonId: string
               <dt className="font-medium text-gray-500">Defence</dt>
               <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.defence}</dd>
             </div>
-            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500">Speed</dt>
               <dd className="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">{pokemon.speed}</dd>
             </div>
