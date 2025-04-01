@@ -167,7 +167,7 @@ export default function Upload() {
         </div>
 
         {message && (
-          <div className={`mb-4 p-3 rounded ${message.includes('Error') ? 'bg-red-400 text-red-100' : 'bg-green-400 text-green-100'}`}>
+          <div className={`mb-4 p-3 rounded ${message.includes('Error') ? 'bg-red-400 text-red-100' : 'bg-green-500/20 text-lime-400'}`}>
             {message}
           </div>
         )}

@@ -28,6 +28,7 @@ interface GuessResult {
 }
 
 export default function PokemonClassicPanel({ userId }: Props) {
+    console.log(userId)
     const [guessHistory, setGuessHistory] = useState<GuessResult[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 

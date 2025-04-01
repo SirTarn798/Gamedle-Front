@@ -176,7 +176,7 @@ export default function PictureUploader(data: UploadPicture) {
       data.type === "champion"
         ? Object.keys(imageGroups).filter(nameA => !allChampions.data.some(champ => champ.name === nameA))
         : data.type === "pokemon"
-          ? Object.keys(imageGroups).filter(nameA => !allPokemons.data.some(pokemon => pokemon.name === nameA))
+          ? Object.keys(imageGroups).filter(nameA => !allPokemons.some(pokemon => pokemon.name === nameA))
           : [];
 
     if (missingNames.length > 0) {
@@ -572,7 +572,7 @@ export default function PictureUploader(data: UploadPicture) {
               ? "text-red-300"
               : message.includes("No ") || message.includes("Please")
                 ? "text-yellow-900"
-                : "text-green-900"
+                : "text-lime-400"
               }`}
           >
             {message}
