@@ -17,7 +17,6 @@ export default function EditPokemon() {
       setLoading(true);
       const pokemonInfo = await getPokemonById(pokemonId);
       const pokemonPics = await getPicsByPokemonId(pokemonId);
-      
       setPokemon({
         ...pokemonInfo.data, // Spread existing pokemon data
         pictures: pokemonPics, // Add pictures array to pokemon object

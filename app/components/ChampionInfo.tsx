@@ -16,7 +16,6 @@ interface ImageChanges {
 }
 
 export default function ChampionInfo({ champ }: ChampionInfoProps) {
-  // Initialize editedChamp with properly mapped values from champ
   const [isEditing, setIsEditing] = useState(false);
   const [editedChamp, setEditedChamp] = useState<champion>({
     ...champ,

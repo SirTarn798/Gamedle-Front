@@ -139,14 +139,26 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
   const handleDeletePicture = (pictureToDelete: string) => {
     setEditedPokemon({
       ...editedPokemon,
-      pictures: editedPokemon.pictures.filter((pic) => pic !== pictureToDelete),
+      pictures: editedPokemon.pictures.filter((pic) => {
+        const link = pic.location ? pic.location : pic;
+        return link !== pictureToDelete}),
     });
-    if (!pictureToDelete.startsWith("data:image")) {
-      setImageChanges((prev) => ({
-        ...prev,
-        deleted: [...prev.deleted, pictureToDelete],
-      }));
-    }
+    setImageChanges((prev) => {
+      if (!pictureToDelete.startsWith("data:image")) {
+        return {
+          ...prev,
+          deleted: [...prev.deleted, pictureToDelete],
+        };
+      } else {
+        return {
+          ...prev,
+          added: prev.added.filter((img) => {
+            return typeof img === "string" ? img !== pictureToDelete : URL.createObjectURL(img) !== pictureToDelete
+          }
+          ),
+        };
+      }
+    });
   };
 
   const handleSave = async () => {
@@ -285,24 +297,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
               ) : (
                 <h2 className="text-2xl font-normal">{pokemon.name}</h2>
               )}
-              {isEditing ? (
-                <div>
-                  <input
-                    name="class"
-                    value={editedPokemon.class}
-                    onChange={handleInputChange}
-                    className="bg-gray-700 text-white px-2 py-1 rounded text-sm italic"
-                  />
-                  <p
-                    className={`${editedPokemon.class === "" ? "" : "hidden"
-                      } text-cancelRed `}
-                  >
-                    Please insert pokemon's class
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm italic text-gray-300">{pokemon.class}</p>
-              )}
+              
             </div>
           </div>
           <button
@@ -586,13 +581,13 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
               (picture, index) => (
                 <div key={index} className="relative group">
                   <img
-                    src={picture}
+                    src={picture.location ? picture.location : picture}
                     alt={`${pokemon.name} splash ${index}`}
                     className="w-full h-48 object-cover rounded-lg"
                   />
                   {isEditing && (
                     <button
-                      onClick={() => handleDeletePicture(picture)}
+                      onClick={() => handleDeletePicture(picture.location ? picture.location : picture)}
                       className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       ✕
