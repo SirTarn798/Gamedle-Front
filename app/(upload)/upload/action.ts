@@ -105,7 +105,6 @@ export async function saveToDatabase(
       value.map(url => `${url}`)
     ])
   );
-  console.log("formatted ", formatted)
   let formattedUrls;
   if (file === "icon") {
     formattedUrls = Object.fromEntries(
@@ -114,19 +113,17 @@ export async function saveToDatabase(
   } else {
     formattedUrls = formatted;
   }
-  console.log("formatted url ", formattedUrls)
+  const body = JSON.stringify(
+    formattedUrls
+  )
   const response = await fetch(link, {
     method: file === "icon" ? "PATCH" : "POST",
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application.json',
-      Authorization: `Bearer ${session?.token}`,
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      formattedUrls
-    })
+    body: body
   });
 
-  console.log(response);
 }
 

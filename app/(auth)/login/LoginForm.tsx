@@ -16,6 +16,7 @@ export function LoginForm() {
           name="email" 
           placeholder="Email"
           className="text-secondaryColor p-2 rounded-md border-2 border-secondaryColor bg-mainTheme text-lg"
+          // autoComplete="off"
          />
         <h1>Password</h1>
         <input

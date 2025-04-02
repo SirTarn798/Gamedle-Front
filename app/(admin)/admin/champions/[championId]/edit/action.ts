@@ -11,7 +11,7 @@ export async function updateChampion(formData: FormData) {
     const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME;
     const championName = formData.get('championName') as string;
     const cookie = (await cookies()).get("session")?.value;
-      const session = await decrypt(cookie);
+    const session = await decrypt(cookie);
     // Array to store new image URLs
     const newImageUrls: string[] = [];
 
@@ -41,8 +41,23 @@ export async function updateChampion(formData: FormData) {
     let editedChamp = JSON.parse(formData.get("editedChamp"));
     editedChamp["deletedPictures"] = deletedPictures;
     editedChamp["addedPictures"] = newImageUrls;
+
+    editedChamp["nick_name"] = editedChamp["title"];
+    editedChamp["icon"] = editedChamp["icon_url"];
+    editedChamp["roles"] = editedChamp["roles"].map((role) => {
+        if(role === "Top") return "top";
+        else if(role === "Jungle") return "jungle";
+        else if(role === "Middle") return "mid";
+        else if(role === "Bottom") return "bottom";
+        else if(role === "Support") return "support";
+
+    }) 
+
+
     delete editedChamp["pictures"];
-    console.log(editedChamp);
+    delete editedChamp["title"];
+    delete editedChamp["icon_url"];
+
     const link = `${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/update_champion_and_image`;
 
     const response = await fetch(link, {
@@ -54,22 +69,39 @@ export async function updateChampion(formData: FormData) {
         },
         body: JSON.stringify(editedChamp)
     });
+    console.log(JSON.stringify(editedChamp))
     return;
 }
 
-export async function getChampById(id : number) {
+export async function getChampById(id: string) {
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/${id}`, {
             method: "GET",
-            headers : {
-                Accept : 'application/json',
+            headers: {
+                Accept: 'application/json',
                 'Content-Type': 'application/json'
             }
         })
         const data = await response.json()
-        console.log(data);
         return data;
-    } catch(error) {
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export async function getPicsByChampId(id: string) {
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champion_images/image_champion_id`, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ champion_id: id })
+        })
+        const data = await response.json()
+        return data;
+    } catch (error) {
         console.log(error)
     }
 }

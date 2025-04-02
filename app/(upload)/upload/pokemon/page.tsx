@@ -42,7 +42,6 @@ export default function Upload() {
 
         // Process data if needed (e.g., format dates, validate fields)
         const processedData = processData(parsedData);
-        console.log("process data, ", processedData);
         setData(processedData);
         setHasFile(true);
         setIsLoading(false);
@@ -113,7 +112,6 @@ export default function Upload() {
       });
 
       const result = await response.json();
-      console.log("data", data)
       if (response.ok) {
         setMessage(`Successfully saved ${data.length} records to database`);
       } else {
@@ -169,7 +167,7 @@ export default function Upload() {
         </div>
 
         {message && (
-          <div className={`mb-4 p-3 rounded ${message.includes('Error') ? 'bg-red-400 text-red-100' : 'bg-green-400 text-green-100'}`}>
+          <div className={`mb-4 p-3 rounded ${message.includes('Error') ? 'bg-red-400 text-red-100' : 'bg-green-500/20 text-lime-400'}`}>
             {message}
           </div>
         )}

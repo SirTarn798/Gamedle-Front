@@ -34,7 +34,6 @@ export default function PictureUploader(data: UploadPicture) {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/${data.type}s/get_all`);
         if (!response.ok) throw new Error("Failed to fetch");
         const data2 = await response.json();
-        console.log(data2)
         if (data.type === "champion") {
           setAllChampions(data2);
         } else {
@@ -173,19 +172,17 @@ export default function PictureUploader(data: UploadPicture) {
       setMessage("No images to upload");
       return;
     }
-    console.log(allChampions)
     const missingNames =
       data.type === "champion"
         ? Object.keys(imageGroups).filter(nameA => !allChampions.data.some(champ => champ.name === nameA))
         : data.type === "pokemon"
-          ? Object.keys(imageGroups).filter(nameA => !allPokemons.data.some(pokemon => pokemon.name === nameA))
+          ? Object.keys(imageGroups).filter(nameA => !allPokemons.some(pokemon => pokemon.name === nameA))
           : [];
 
     if (missingNames.length > 0) {
       toast.error(`Wrong name: ${missingNames.join(", ")}`);
       return;
     }
-    console.log(imageGroups);
     setIsLoading(true);
     setMessage("Uploading to Cloudflare R2...");
 
@@ -223,7 +220,6 @@ export default function PictureUploader(data: UploadPicture) {
             urlsById[entityName].push(response.urls[0]);
           }
 
-          console.log(response);
         }
       }
       setUploadedUrls(urlsById);
@@ -231,7 +227,6 @@ export default function PictureUploader(data: UploadPicture) {
       setMessage(
         "Upload complete! URLs are available in the console and below."
       );
-      console.log("Uploaded URLs:", urlsById);
     } catch (error) {
       setMessage(
         `Error uploading: ${error instanceof Error ? error.message : "Unknown error"
@@ -577,7 +572,7 @@ export default function PictureUploader(data: UploadPicture) {
               ? "text-red-300"
               : message.includes("No ") || message.includes("Please")
                 ? "text-yellow-900"
-                : "text-green-900"
+                : "text-lime-400"
               }`}
           >
             {message}

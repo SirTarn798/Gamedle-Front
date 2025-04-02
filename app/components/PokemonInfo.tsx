@@ -2,7 +2,7 @@
 
 import { useState, useRef, ChangeEvent } from "react";
 import { pokemon, UpdatePokemonPayload } from "@/lib/type";
-import { updatePokemon } from "../(edit)/edit/pokemon/action";
+import { updatePokemon } from "../(admin)/admin/pokemons/[pokemonId]/edit/action";
 import { toast } from "react-toastify";
 
 interface ImageChanges {
@@ -21,7 +21,7 @@ function validatePokemonFields(editedPokemon: pokemon) {
     editedPokemon.height <= 0 ||
     editedPokemon.weight <= 0 ||
     editedPokemon.attack < 0 ||
-    editedPokemon.defense < 0 ||
+    editedPokemon.defence < 0 ||
     editedPokemon.speed < 0 ||
     editedPokemon.type1 === "" ||
     editedPokemon.abilities.length === 0 ||
@@ -67,7 +67,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
       name === "weight" ||
       name === "generation" ||
       name === "attack" ||
-      name === "defense" ||
+      name === "defence" ||
       name === "speed"
     ) {
       setEditedPokemon({
@@ -139,14 +139,26 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
   const handleDeletePicture = (pictureToDelete: string) => {
     setEditedPokemon({
       ...editedPokemon,
-      pictures: editedPokemon.pictures.filter((pic) => pic !== pictureToDelete),
+      pictures: editedPokemon.pictures.filter((pic) => {
+        const link = pic.location ? pic.location : pic;
+        return link !== pictureToDelete}),
     });
-    if (!pictureToDelete.startsWith("data:image")) {
-      setImageChanges((prev) => ({
-        ...prev,
-        deleted: [...prev.deleted, pictureToDelete],
-      }));
-    }
+    setImageChanges((prev) => {
+      if (!pictureToDelete.startsWith("data:image")) {
+        return {
+          ...prev,
+          deleted: [...prev.deleted, pictureToDelete],
+        };
+      } else {
+        return {
+          ...prev,
+          added: prev.added.filter((img) => {
+            return typeof img === "string" ? img !== pictureToDelete : URL.createObjectURL(img) !== pictureToDelete
+          }
+          ),
+        };
+      }
+    });
   };
 
   const handleSave = async () => {
@@ -254,12 +266,12 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
       {/* Success/Error Message */}
       {saveStatus === "success" && (
         <div className="absolute top-0 left-0 right-0 bg-green-600 text-white text-center py-2 z-50">
-          Champion updated successfully!
+          Pokemon updated successfully!
         </div>
       )}
       {saveStatus === "error" && (
         <div className="absolute top-0 left-0 right-0 bg-red-600 text-white text-center py-2 z-50">
-          Failed to update champion. Please try again.
+          Failed to update pokemon. Please try again.
         </div>
       )}
 
@@ -285,24 +297,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
               ) : (
                 <h2 className="text-2xl font-normal">{pokemon.name}</h2>
               )}
-              {isEditing ? (
-                <div>
-                  <input
-                    name="class"
-                    value={editedPokemon.class}
-                    onChange={handleInputChange}
-                    className="bg-gray-700 text-white px-2 py-1 rounded text-sm italic"
-                  />
-                  <p
-                    className={`${editedPokemon.class === "" ? "" : "hidden"
-                      } text-cancelRed `}
-                  >
-                    Please insert pokemon's class
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm italic text-gray-300">{pokemon.class}</p>
-              )}
+              
             </div>
           </div>
           <button
@@ -347,7 +342,7 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
               <label className="block text-gray-400 text-sm">Type 2</label>
               {isEditing ? (
                 <input
-                  name="typ2"
+                  name="type2"
                   value={editedPokemon.type2 || ""}
                   onChange={handleInputChange}
                   className="bg-gray-700 text-white px-2 py-1 rounded w-full"
@@ -432,26 +427,26 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-gray-400 text-sm">Defense</label>
+              <label className="block text-gray-400 text-sm">Defence</label>
               {isEditing ? (
                 <div>
                   <input
                     type="number"
-                    name="defense"
-                    value={editedPokemon.defense}
+                    name="defence"
+                    value={editedPokemon.defence ?? 0}
                     onChange={handleInputChange}
                     step="0.1"
                     className="bg-gray-700 text-white px-2 py-1 rounded w-full"
                   />
                   <p
-                    className={`${editedPokemon.defense < 0 ? "" : "hidden"
+                    className={`${editedPokemon.defence < 0 ? "" : "hidden"
                       } text-cancelRed `}
                   >
-                    Pokemon's defense needs to be higher than 0
+                    Pokemon's defence needs to be higher than 0
                   </p>
                 </div>
               ) : (
-                <p>{pokemon.defense}</p>
+                <p>{pokemon.defence}</p>
               )}
             </div>
             <div>
@@ -586,13 +581,13 @@ export default function PokemonInfo({ pokemon }: PokemonInfoProps) {
               (picture, index) => (
                 <div key={index} className="relative group">
                   <img
-                    src={picture}
+                    src={picture.location ? picture.location : picture}
                     alt={`${pokemon.name} splash ${index}`}
                     className="w-full h-48 object-cover rounded-lg"
                   />
                   {isEditing && (
                     <button
-                      onClick={() => handleDeletePicture(picture)}
+                      onClick={() => handleDeletePicture(picture.location ? picture.location : picture)}
                       className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       ✕

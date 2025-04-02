@@ -20,7 +20,6 @@ export default async function profile() {
         }
 
         const data = await response.json();
-        console.log("Fetched data:", data);
 
         return (
             <div className="py-20 mx-auto w-[600px]">

@@ -26,6 +26,7 @@ export type LeagueSearch = {
   image: string,
   name: string,
   title: string,
+  icon_url: string,
 }
 
 export type UploadPicture = {
@@ -65,7 +66,7 @@ export type pokemon = {
   pictures : string[];
 }
 
-export type lane = "top" | "jungle" | "mid" | "bot" | "support"
+export type lane = "Top" | "Jungle" | "Middle" | "Bottom" | "Support"
 
 export type UpdateChampPayload = {
   championName: string;
@@ -155,4 +156,8 @@ export interface ChampionGuessResult {
       pivot?: any;  // Additional pivot information
     }
   };
+}
+
+export interface ChampionWithPictures extends champion {
+  pictures: { id: string; champion_id: string; location: string }[];
 }
