@@ -45,6 +45,40 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
   const [isSuggestionVisible, setIsSuggestionVisible] = useState(false);
   const inputRef = React.useRef(null);
 
+  useEffect(() => {
+    const getInit = async () => {
+      const body = { user_id: userId }
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/players/get_all_champion_progress`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body)
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const result = await response.json();
+        const extractedData: GuessResult = [
+          ...Object.values(result.progress)
+            .map(entry => ({
+              type: "progress",
+              data: entry.pivot.details.result
+            }))
+        ].reverse();
+
+        setGuessHistory(extractedData);
+      } catch (error) {
+        console.log(error)
+      }
+
+
+    }
+
+    getInit();
+  }, [userId])
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -118,55 +152,55 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
   //  handle options
 
   useEffect(() => {
-      const fetchChampions = async () => {
-          try {
-              setLoading(true);
-              const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/bulk`);
+    const fetchChampions = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/bulk`);
 
-              if (!response.ok) {
-                  throw new Error(`Failed to fetch champions: ${response.status}`);
-              }
-              const data = await response.json();
-              const championNames = data.data.map(champion => champion.name);
-              setOptions(championNames);
-              setError(null);
-          } catch (err) {
-              setError(err.message);
-              console.error("Error fetching champions:", err);
-          } finally {
-              setLoading(false);
-          }
-      };
-      fetchChampions();
-  }, []);
-    const handleInputChange = (e) => {
-        const newSearchTerm = e.target.value;
-        setSearchTerm(newSearchTerm);
-
-        if (newSearchTerm) {
-            const filteredSuggestions = options.filter(name =>
-                name.toLowerCase().startsWith(newSearchTerm.toLowerCase())
-            );
-            setSuggestions(filteredSuggestions.sort());
-            setIsSuggestionVisible(true);
-        } else {
-            setSuggestions([]);
-            setIsSuggestionVisible(false);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch champions: ${response.status}`);
         }
+        const data = await response.json();
+        const championNames = data.data.map(champion => champion.name);
+        setOptions(championNames);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+        console.error("Error fetching champions:", err);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchChampions();
+  }, []);
+  const handleInputChange = (e) => {
+    const newSearchTerm = e.target.value;
+    setSearchTerm(newSearchTerm);
 
-    // Close suggestions when clicking outside the input/suggestions
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (inputRef.current && !inputRef.current.contains(event.target) && isSuggestionVisible) {
-                setIsSuggestionVisible(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [inputRef, isSuggestionVisible]);
+    if (newSearchTerm) {
+      const filteredSuggestions = options.filter(name =>
+        name.toLowerCase().startsWith(newSearchTerm.toLowerCase())
+      );
+      setSuggestions(filteredSuggestions.sort());
+      setIsSuggestionVisible(true);
+    } else {
+      setSuggestions([]);
+      setIsSuggestionVisible(false);
+    }
+  };
+
+  // Close suggestions when clicking outside the input/suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (inputRef.current && !inputRef.current.contains(event.target) && isSuggestionVisible) {
+        setIsSuggestionVisible(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [inputRef, isSuggestionVisible]);
 
   const inputWidth = inputRef.current?.offsetWidth || '100%'; // Get input width
 
@@ -184,25 +218,25 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
           onFocus={() => searchTerm && suggestions.length > 0 && setIsSuggestionVisible(true)}
           autoComplete="off"
         />
-          {isSuggestionVisible && (
-              <div
-                  className="absolute top-full left-0 bg-mainTheme border border-white rounded-md shadow-md overflow-y-auto z-10 max-h-[300px]"
-                  style={{ width: inputWidth }}
-              >
-                  {suggestions.length > 0 ? (
-                      suggestions.map((suggestion, index) => (
-                          <div
-                              key={index}
-                              className="p-2 cursor-pointer hover:bg-white hover:text-mainTheme text-white"
-                          >
-                              {suggestion}
-                          </div>
-                      ))
-                  ) : (
-                      <div className="p-2 text-gray-400">No suggestions</div>
-                  )}
-              </div>
-          )}
+        {isSuggestionVisible && (
+          <div
+            className="absolute top-full left-0 bg-mainTheme border border-white rounded-md shadow-md overflow-y-auto z-10 max-h-[300px]"
+            style={{ width: inputWidth }}
+          >
+            {suggestions.length > 0 ? (
+              suggestions.map((suggestion, index) => (
+                <div
+                  key={index}
+                  className="p-2 cursor-pointer hover:bg-white hover:text-mainTheme text-white"
+                >
+                  {suggestion}
+                </div>
+              ))
+            ) : (
+              <div className="p-2 text-gray-400">No suggestions</div>
+            )}
+          </div>
+        )}
         <button
           type="submit"
           className="absolute right-3 top-1/2 -translate-y-1/2"
