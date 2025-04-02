@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import React from "react";
 
 interface Champion {
   id: number;
@@ -36,6 +37,13 @@ interface GuessResult {
 export function LeagueClassicPanel({ userId }: { userId: string }) {
   const [guessHistory, setGuessHistory] = useState<GuessResult[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [error, setError] = useState(null);
+  const [options, setOptions] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [isSuggestionVisible, setIsSuggestionVisible] = useState(false);
+  const inputRef = React.useRef(null);
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +115,61 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
     )
   }
 
+  //  handle options
+
+  useEffect(() => {
+      const fetchChampions = async () => {
+          try {
+              setLoading(true);
+              const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/bulk`);
+
+              if (!response.ok) {
+                  throw new Error(`Failed to fetch champions: ${response.status}`);
+              }
+              const data = await response.json();
+              const championNames = data.data.map(champion => champion.name);
+              setOptions(championNames);
+              setError(null);
+          } catch (err) {
+              setError(err.message);
+              console.error("Error fetching champions:", err);
+          } finally {
+              setLoading(false);
+          }
+      };
+      fetchChampions();
+  }, []);
+    const handleInputChange = (e) => {
+        const newSearchTerm = e.target.value;
+        setSearchTerm(newSearchTerm);
+
+        if (newSearchTerm) {
+            const filteredSuggestions = options.filter(name =>
+                name.toLowerCase().startsWith(newSearchTerm.toLowerCase())
+            );
+            setSuggestions(filteredSuggestions.sort());
+            setIsSuggestionVisible(true);
+        } else {
+            setSuggestions([]);
+            setIsSuggestionVisible(false);
+        }
+    };
+
+    // Close suggestions when clicking outside the input/suggestions
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (inputRef.current && !inputRef.current.contains(event.target) && isSuggestionVisible) {
+                setIsSuggestionVisible(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [inputRef, isSuggestionVisible]);
+
+  const inputWidth = inputRef.current?.offsetWidth || '100%'; // Get input width
+
   return (
     <>
 
@@ -116,7 +179,30 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
           className="w-full p-3 bg-mainTheme border-4 border-white text-2xl text-white"
           name="champName"
           placeholder="Enter champion name"
+          value={searchTerm}
+          onChange={handleInputChange}
+          onFocus={() => searchTerm && suggestions.length > 0 && setIsSuggestionVisible(true)}
+          autoComplete="off"
         />
+          {isSuggestionVisible && (
+              <div
+                  className="absolute top-full left-0 bg-mainTheme border border-white rounded-md shadow-md overflow-y-auto z-10 max-h-[300px]"
+                  style={{ width: inputWidth }}
+              >
+                  {suggestions.length > 0 ? (
+                      suggestions.map((suggestion, index) => (
+                          <div
+                              key={index}
+                              className="p-2 cursor-pointer hover:bg-white hover:text-mainTheme text-white"
+                          >
+                              {suggestion}
+                          </div>
+                      ))
+                  ) : (
+                      <div className="p-2 text-gray-400">No suggestions</div>
+                  )}
+              </div>
+          )}
         <button
           type="submit"
           className="absolute right-3 top-1/2 -translate-y-1/2"

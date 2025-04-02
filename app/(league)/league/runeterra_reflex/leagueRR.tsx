@@ -516,11 +516,11 @@ export default function RuneterraReflexCanvas({ username }: Props) {
             case "menu":
                 return (
                     <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
-                        <h1 className="text-2xl font-bold">Runeterra Reflex</h1>
-                        <button onClick={handleQueueUp} className="btn-primary">
+                        <h1 className="text-2xl font-bold text-white">Runeterra Reflex</h1>
+                        <button onClick={handleQueueUp} className="btn-primary text-red-500">
                             Queue Up!
                         </button>
-                        <button onClick={handleCreateRoom} className="btn-primary">
+                        <button onClick={handleCreateRoom} className="btn-primary text-red-500">
                             Create Room
                         </button>
                         <div className="flex gap-2">
@@ -531,7 +531,7 @@ export default function RuneterraReflexCanvas({ username }: Props) {
                                 onChange={(e) => setJoinRoomId(e.target.value)}
                                 className="border p-2 text-black"
                             />
-                            <button onClick={handleJoinRoom} className="btn-primary">
+                            <button onClick={handleJoinRoom} className="btn-primary text-red-500">
                                 Join Room
                             </button>
                         </div>
@@ -542,7 +542,7 @@ export default function RuneterraReflexCanvas({ username }: Props) {
                 return (
                     <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
                         <div className="flex flex-col items-center justify-center">
-                            <h1 className="text-3xl">Waiting for other players</h1>
+                            <h1 className="text-3xl text-white">Waiting for other players</h1>
                             <div className="animate-spin h-16 w-16 border-4 border-gray-300 border-t-black rounded-full m-10"></div>
                             <button
                                 className="bg-cancelRed py-2 px-5"
@@ -559,7 +559,7 @@ export default function RuneterraReflexCanvas({ username }: Props) {
                     <div className="flex flex-col items-center gap-8 mt-12 w-2/6 p-5 pixelBorder-2 bg-mainTheme">
                         <div className="flex flex-col items-center justify-center">
                             <div className="flex flex-col gap-1 w-full items-center">
-                                <h1 className="text-3xl">Room : {room?.roomId}</h1>
+                                <h1 className="text-3xl text-white">Room : {room?.roomId}</h1>
                                 <h1
                                     className={`text-3xl ${room?.players && Object.keys(room.players).length === 3
                                             ? "text-acceptGreen"
@@ -570,7 +570,7 @@ export default function RuneterraReflexCanvas({ username }: Props) {
                                     /3
                                 </h1>
                             </div>
-                            <div className="flex justify-center gap-10">
+                            <div className="flex justify-center gap-10 text-white">
                                 {room?.players &&
                                     Object.entries(room.players).map(([id, player]) => (
                                         <div

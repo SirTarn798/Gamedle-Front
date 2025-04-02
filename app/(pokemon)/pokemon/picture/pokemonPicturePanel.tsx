@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { guessPokemonClassic } from "../action";
+import React from "react";
 
 type Props = {
     userId: string,
@@ -15,6 +16,13 @@ export default function PokemonPicturePanel({ userId }: Props) {
     const [ansResult, setAnsResult] = useState<"neutral" | "false" | "correct">("neutral");
     const [isVibrating, setIsVibrating] = useState(false);
 
+    const [searchTerm, setSearchTerm] = useState("");
+    const [error, setError] = useState(null);
+    const [options, setOptions] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+    const [isSuggestionVisible, setIsSuggestionVisible] = useState(false);
+    const inputRef = React.useRef(null);
+        
     useEffect(() => {
         const getImage = async () => {
             const body = { user_id: userId }
@@ -76,17 +84,96 @@ export default function PokemonPicturePanel({ userId }: Props) {
             }, 500);
         }
     };
+  //  handle options
+
+  useEffect(() => {
+      const fetchPokemons = async () => {
+          try {
+              setLoading(true);
+              const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/pokemons/get_all`);
+
+              if (!response.ok) {
+                  throw new Error(`Failed to fetch pokemons: ${response.status}`);
+              }
+              const data = await response.json();
+              const pokemonNames = data.map(pokemon => pokemon.name);
+              setOptions(pokemonNames);
+              setError(null);
+          } catch (err) {
+              setError(err.message);
+              console.error("Error fetching pokemons:", err);
+          } finally {
+              setLoading(false);
+          }
+      };
+      fetchPokemons();
+  }, []);
+    const handleInputChange = (e) => {
+        const newSearchTerm = e.target.value;
+        setSearchTerm(newSearchTerm);
+
+        if (newSearchTerm) {
+            const filteredSuggestions = options.filter(name =>
+                name.toLowerCase().startsWith(newSearchTerm.toLowerCase())
+            );
+            setSuggestions(filteredSuggestions.sort());
+            setIsSuggestionVisible(true);
+        } else {
+            setSuggestions([]);
+            setIsSuggestionVisible(false);
+        }
+    };
+
+    // Close suggestions when clicking outside the input/suggestions
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (inputRef.current && !inputRef.current.contains(event.target) && isSuggestionVisible) {
+                setIsSuggestionVisible(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [inputRef, isSuggestionVisible]);
+
+  const inputWidth = inputRef.current?.offsetWidth || '100%'; // Get input width
 
     return (
         <div className="flex flex-col items-center gap-8 mt-12 w-full max-w-5xl">
-
+            <h1 className="gameBorder1 text-5xl text-zinc-500 tracking-wider cursor-default text:center">
+                Who's that Pokémon?
+            </h1>
             <form onSubmit={handleFormSubmit} className="relative mb-8">
                 <div className=" gameBorder2 flex flex-row flex-nowrap gap-[30px] px-[30px] py-[15px]">
                     <input
                         type="text"
                         className="w-75% focus:outline-none focus:ring-0 border-none bg-transparent text-2xl text-white"
                         name="pokemonName"
+                        value={searchTerm}
+                        onChange={handleInputChange}
+                        onFocus={() => searchTerm && suggestions.length > 0 && setIsSuggestionVisible(true)}
+                        autoComplete="off"
                     />
+                        {isSuggestionVisible && (
+                            <div
+                                className="absolute top-[80px] left-0 bg-mainTheme border border-white rounded-md shadow-md overflow-y-auto z-10 max-h-[200px]"
+                                style={{ width: inputWidth }}
+                            >
+                                {suggestions.length > 0 ? (
+                                    suggestions.map((suggestion, index) => (
+                                        <div
+                                            key={index}
+                                            className="p-2 cursor-pointer hover:bg-white hover:text-mainTheme text-white"
+                                        >
+                                            {suggestion}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="p-2 text-gray-400">No suggestions</div>
+                                )}
+                            </div>
+                        )}
                     <button
                         type="submit"
                         className=""
