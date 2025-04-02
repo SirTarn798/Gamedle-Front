@@ -141,7 +141,9 @@ export default function PokemonPicturePanel({ userId }: Props) {
 
     return (
         <div className="flex flex-col items-center gap-8 mt-12 w-full max-w-5xl">
-
+            <h1 className="gameBorder1 text-5xl text-zinc-500 tracking-wider cursor-default text:center">
+                Who's that Pokémon?
+            </h1>
             <form onSubmit={handleFormSubmit} className="relative mb-8">
                 <div className=" gameBorder2 flex flex-row flex-nowrap gap-[30px] px-[30px] py-[15px]">
                     <input
