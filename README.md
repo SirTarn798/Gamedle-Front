@@ -1,6 +1,6 @@
-# PANT
+# Gamedle
 > [!IMPORTANT]
-> PANT's app is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc
+> Gamedle app is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc
 
 ## Project details
 > เป็นโครงงานเกี่ยวกับเกมทายตัวละครจากเกมที่แบ่งออกเป็น 2 เกม ได้แก่ League of Legends และ Pokémon
