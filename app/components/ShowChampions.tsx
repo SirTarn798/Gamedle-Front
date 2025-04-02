@@ -7,6 +7,7 @@ function ShowChampions(props : LeagueSearch) {
             <div className="flex gap-3 flex-col">
                 <h1>{props.name}</h1>
                 <h1>{props.title}</h1>
+                <h1>{props.roles[0]}</h1>
             </div>
         </div>
     )

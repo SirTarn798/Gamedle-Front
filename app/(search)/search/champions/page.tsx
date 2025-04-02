@@ -47,7 +47,7 @@ function SearchChampion() {
             const filteredSuggestions = options.filter(name =>
                 name.toLowerCase().includes(newSearchTerm.toLowerCase())
             );
-            setSuggestions(filteredSuggestions);
+            setSuggestions(filteredSuggestions.sort().slice(0, 10));
             setIsSuggestionVisible(true);
         } else {
             setSuggestions([]);
