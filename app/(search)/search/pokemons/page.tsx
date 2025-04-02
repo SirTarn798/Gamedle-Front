@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import ShowChampions from "@/app/components/ShowChampions";
 import { searchChampionData } from "@/lib/exampleData";
+import ShowPokemons from "@/app/components/ShowPokemons";
 
 function SearchPokemon() {
     const [searchTerm, setSearchTerm] = useState("");
-    const [champions, setChampions] = useState([]);
+    const [pokemons, setPokemons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -14,17 +15,17 @@ function SearchPokemon() {
         const fetchChampions = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/champions/bulk`); // Adjust this endpoint to your API
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_SERVER_URL}/pokemons/bulk`); // Adjust this endpoint to your API
                 
                 if (!response.ok) {
-                    throw new Error(`Failed to fetch champions: ${response.status}`);
+                    throw new Error(`Failed to fetch pokemons: ${response.status}`);
                 }
                 const data = await response.json();
-                setChampions(data.data);
+                setPokemons(data.data);
                 setError(null);
             } catch (err) {
                 setError(err.message);
-                console.error("Error fetching champions:", err);
+                console.error("Error fetching pokemons:", err);
             } finally {
                 setLoading(false);
             }
@@ -32,10 +33,9 @@ function SearchPokemon() {
         fetchChampions();
     }, []);
 
-    console.log(champions[0])
-    // Filter champions based on input
-    const filteredChampions = champions.filter(champion =>
-        champion.name.toLowerCase().includes(searchTerm.toLowerCase())
+    // Filter pokemons based on input
+    const filteredPokemons = pokemons.filter(pokemon =>
+        pokemon.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -48,7 +48,7 @@ function SearchPokemon() {
                 <input
                     type="text"
                     className="w-full p-3 bg-mainTheme border-4 border-white text-lg"
-                    placeholder="Search for a champion..."
+                    placeholder="Search for a pokemon..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -57,8 +57,8 @@ function SearchPokemon() {
                 </button>
             </form>
             <div className="pixelBorder bg-mainTheme w-full min-h-[200px] max-h-[400px] overflow-auto overflow-x-hidden p-2 custom-scrollbar">
-                {filteredChampions.map((champion, index) => (
-                    <ShowChampions key={index} {...champion} />
+                {filteredPokemons.map((pokemon, index) => (
+                    <ShowPokemons key={index} {...pokemon} />
                 ))}
             </div>
         </div>

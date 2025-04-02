@@ -26,6 +26,7 @@ export type LeagueSearch = {
   image: string,
   name: string,
   title: string,
+  icon_url: string,
 }
 
 export type UploadPicture = {

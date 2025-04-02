@@ -10,10 +10,6 @@ function SearchChampion() {
     const [champions, setChampions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [options, setOptions] = useState([]);
-    const [suggestions, setSuggestions] = useState([]);
-    const [isSuggestionVisible, setIsSuggestionVisible] = useState(false);
-    const inputRef = React.useRef(null); // Create a ref for the input
 
     useEffect(() => {
         const fetchChampions = async () => {
@@ -26,8 +22,6 @@ function SearchChampion() {
                 }
                 const data = await response.json();
                 setChampions(data.data);
-                const championNames = data.data.map(champion => champion.name);
-                setOptions(championNames);
                 setError(null);
             } catch (err) {
                 setError(err.message);
@@ -39,39 +33,6 @@ function SearchChampion() {
         fetchChampions();
     }, []);
 
-    const handleInputChange = (e) => {
-        const newSearchTerm = e.target.value;
-        setSearchTerm(newSearchTerm);
-
-        if (newSearchTerm) {
-            const filteredSuggestions = options.filter(name =>
-                name.toLowerCase().includes(newSearchTerm.toLowerCase())
-            );
-            setSuggestions(filteredSuggestions.sort().slice(0, 10));
-            setIsSuggestionVisible(true);
-        } else {
-            setSuggestions([]);
-            setIsSuggestionVisible(false);
-        }
-    };
-
-    // Close suggestions when clicking outside the input/suggestions
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (inputRef.current && !inputRef.current.contains(event.target) && isSuggestionVisible) {
-                setIsSuggestionVisible(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [inputRef, isSuggestionVisible]);
-
-    const inputWidth = inputRef.current?.offsetWidth || '100%'; // Get input width
-
-    // console.log(champions[0])
-    // console.log(options)
     // Filter champions based on input
     const filteredChampions = champions.filter(champion =>
         champion.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -85,33 +46,12 @@ function SearchChampion() {
 
             <div className="w-full relative mb-8">
                 <input
-                    ref={inputRef}
                     type="text"
                     className="w-full p-3 bg-mainTheme border-4 border-white text-lg"
                     placeholder="Search for a champion..."
                     value={searchTerm}
-                    onChange={handleInputChange}
-                    onFocus={() => searchTerm && suggestions.length > 0 && setIsSuggestionVisible(true)}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                {/* {isSuggestionVisible && (
-                    <div
-                        className="absolute top-full left-0 bg-mainTheme border border-white rounded-md shadow-md overflow-hidden z-10"
-                        style={{ width: inputWidth }}
-                    >
-                        {suggestions.length > 0 ? (
-                            suggestions.map((suggestion, index) => (
-                                <div
-                                    key={index}
-                                    className="p-2 cursor-pointer hover:bg-white hover:text-mainTheme"
-                                >
-                                    {suggestion}
-                                </div>
-                            ))
-                        ) : (
-                            <div className="p-2 text-gray-400">No suggestions</div>
-                        )}
-                    </div>
-                )} */}
                 <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2">
                     <img src="/arrowheads.png" alt="Submit" width={65} />
                 </button>
