@@ -173,6 +173,7 @@ export function LeagueClassicPanel({ userId }: { userId: string }) {
     };
     fetchChampions();
   }, []);
+  
   const handleInputChange = (e) => {
     const newSearchTerm = e.target.value;
     setSearchTerm(newSearchTerm);
