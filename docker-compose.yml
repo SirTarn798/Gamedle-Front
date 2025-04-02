@@ -9,6 +9,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/.next  # This will use a named volume for .next
     environment:
       - NODE_ENV=development
     command: npm run dev
